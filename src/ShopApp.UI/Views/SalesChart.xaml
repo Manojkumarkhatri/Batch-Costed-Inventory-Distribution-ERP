@@ -1,0 +1,29 @@
+<!--
+  A line and area chart drawn onto a canvas.
+
+  There is no charting package in this solution, and adding one for a single
+  screen is not worth the dependency. The drawing is done in code-behind
+  against the live canvas size, so the line stays crisp at any width rather
+  than being a stretched picture.
+-->
+<UserControl x:Class="ShopApp.UI.Views.SalesChart"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+  <Grid>
+    <Canvas x:Name="Plot" ClipToBounds="False" Background="Transparent"/>
+
+    <!-- Follows the cursor. Hidden until the pointer is over a point. -->
+    <Border x:Name="Tip" Visibility="Collapsed" Panel.ZIndex="10"
+            Background="{StaticResource RailBase}" CornerRadius="6"
+            Padding="10,7" IsHitTestVisible="False"
+            HorizontalAlignment="Left" VerticalAlignment="Top">
+      <StackPanel>
+        <TextBlock x:Name="TipLabel" Foreground="#94A3B8" FontSize="10.5"/>
+        <TextBlock x:Name="TipValue" Foreground="White" FontSize="14"
+                   FontWeight="SemiBold" Margin="0,2,0,0"
+                   FontFamily="{StaticResource NumFont}"/>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

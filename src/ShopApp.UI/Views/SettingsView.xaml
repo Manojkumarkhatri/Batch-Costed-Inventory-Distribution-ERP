@@ -1,0 +1,238 @@
+<UserControl x:Class="ShopApp.UI.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <UserControl.Resources>
+    <Style x:Key="Panel" TargetType="Border">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="BorderBrush" Value="#E2E8F0"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Padding" Value="20"/>
+      <Setter Property="Margin" Value="0,0,0,10"/>
+    </Style>
+    <Style x:Key="SectionHead" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="16"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="#0F172A"/>
+    </Style>
+    <Style x:Key="Hint" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#94A3B8"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="Margin" Value="0,4,0,0"/>
+    </Style>
+    <Style x:Key="FieldLabel" TargetType="TextBlock">
+      <Setter Property="Margin" Value="0,12,0,3"/>
+      <Setter Property="Foreground" Value="#64748B"/>
+      <Setter Property="FontSize" Value="12"/>
+    </Style>
+  </UserControl.Resources>
+
+  <DockPanel Margin="6">
+    <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}"
+               Foreground="#94A3B8" FontSize="11" Margin="2,8,0,0"/>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel MaxWidth="920" HorizontalAlignment="Left">
+
+        <!-- ======================= BACKUP, first ======================= -->
+        <Border Style="{StaticResource Panel}">
+          <StackPanel>
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Back up now (F9)" Padding="16,7"
+                      FontWeight="SemiBold" Foreground="White" Background="#15803D"
+                      BorderThickness="0" Command="{Binding BackupNowCommand}"/>
+              <StackPanel>
+                <TextBlock Text="Backup" Style="{StaticResource SectionHead}"/>
+                <TextBlock Style="{StaticResource Hint}"
+                           Text="A copy of the whole database, encrypted, written every time the app closes. This is the only thing standing between a dead hard disk and starting the books again from nothing."/>
+              </StackPanel>
+            </DockPanel>
+
+            <TextBlock Text="Folder" Style="{StaticResource FieldLabel}"/>
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Open folder" Padding="12,6" Margin="6,0,0,0"
+                      Command="{Binding OpenBackupFolderCommand}"/>
+              <Button DockPanel.Dock="Right" Content="Choose..." Padding="14,6" Margin="6,0,0,0"
+                      FontWeight="SemiBold" Command="{Binding ChooseFolderCommand}"/>
+              <TextBox Text="{Binding BackupFolder}" IsReadOnly="True"/>
+            </DockPanel>
+            <TextBlock Style="{StaticResource Hint}"
+                       Text="A USB stick or a second disk. A folder on the same drive as the data is no protection against that drive failing."/>
+
+            <Grid Margin="0,4,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+
+              <StackPanel Grid.Column="0">
+                <TextBlock Text="Passphrase" Style="{StaticResource FieldLabel}"/>
+                <DockPanel>
+                  <Button DockPanel.Dock="Right" Content="Set passphrase..." Padding="14,6"
+                          Margin="6,0,0,0" FontWeight="SemiBold"
+                          Command="{Binding SetPassphraseCommand}"/>
+                  <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6"
+                          Padding="10,7" Background="#F8FAFC">
+                    <TextBlock VerticalAlignment="Center">
+                      <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                          <Setter Property="Text" Value="Not set - backups cannot run"/>
+                          <Setter Property="Foreground" Value="#B91C1C"/>
+                          <Setter Property="FontWeight" Value="SemiBold"/>
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding PassphraseIsSet}" Value="True">
+                              <Setter Property="Text" Value="Set on this Windows account"/>
+                              <Setter Property="Foreground" Value="#15803D"/>
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </TextBlock.Style>
+                    </TextBlock>
+                  </Border>
+                </DockPanel>
+              </StackPanel>
+
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="Copies to keep" Style="{StaticResource FieldLabel}"/>
+                <DockPanel>
+                  <Button DockPanel.Dock="Right" Content="Save" Padding="14,6" Margin="6,0,0,0"
+                          Command="{Binding SaveKeepCountCommand}"/>
+                  <TextBox Text="{Binding BackupKeepCount, UpdateSourceTrigger=PropertyChanged}"/>
+                </DockPanel>
+                <TextBlock Style="{StaticResource Hint}"
+                           Text="Older copies are deleted beyond this count. 30 gives about a month of daily history."/>
+              </StackPanel>
+            </Grid>
+
+            <TextBlock Margin="0,16,0,0" Foreground="#64748B" FontSize="12">
+              <Run Text="Last backup:"/>
+              <Run Text="{Binding LastBackupText}" FontWeight="SemiBold" Foreground="#0F172A"/>
+            </TextBlock>
+          </StackPanel>
+        </Border>
+
+        <!-- ========================== RESTORE ========================== -->
+        <Border Style="{StaticResource Panel}">
+          <StackPanel>
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Restore selected..." Padding="16,7"
+                      Foreground="White" Background="#B45309" BorderThickness="0"
+                      FontWeight="SemiBold" Command="{Binding RestoreCommand}"/>
+              <StackPanel>
+                <TextBlock Text="Restore" Style="{StaticResource SectionHead}"/>
+                <TextBlock Style="{StaticResource Hint}"
+                           Text="Pick a backup and put it back. The current database is renamed rather than deleted, so a wrong choice can still be undone by hand. The app closes afterwards."/>
+              </StackPanel>
+            </DockPanel>
+
+            <DataGrid ItemsSource="{Binding Backups}" SelectedItem="{Binding SelectedBackup}"
+                      IsReadOnly="True" Height="180" Margin="0,14,0,0">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="FILE" Binding="{Binding Name}" Width="2.5*"/>
+                <DataGridTextColumn Header="WRITTEN" Width="150"
+                                    Binding="{Binding Written, StringFormat=dd-MMM-yyyy HH:mm}"/>
+                <DataGridTextColumn Header="SIZE" Binding="{Binding Size}" Width="100"/>
+              </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Style="{StaticResource Hint}"
+                       Text="Empty means the folder is not set, the drive is unplugged, or no backup has run yet. Test a restore once, on purpose, while nothing is at stake - a backup nobody has ever opened is only a guess."/>
+          </StackPanel>
+        </Border>
+
+        <!-- ====================== BUSINESS DETAILS ====================== -->
+        <Border Style="{StaticResource Panel}">
+          <StackPanel>
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Save" Padding="20,7" FontWeight="SemiBold"
+                      Command="{Binding SaveBusinessCommand}"/>
+              <StackPanel>
+                <TextBlock Text="Business details" Style="{StaticResource SectionHead}"/>
+                <TextBlock Style="{StaticResource Hint}"
+                           Text="Printed at the top of every invoice, exactly as typed here."/>
+              </StackPanel>
+            </DockPanel>
+
+            <TextBlock Text="Business name *" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding BusinessName, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel Grid.Column="0">
+                <TextBlock Text="Address" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
+                         Height="70" AcceptsReturn="True" TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"/>
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="Phone" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}"/>
+              
+                <TextBlock Text="Opening cash in hand" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding OpeningCashInHand, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Style="{StaticResource Hint}"
+                           Text="What was in the till the day he started using the app. Every later movement is worked out from what has happened; this starting figure has no transaction behind it. The Balance Sheet uses it."/>
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- ===================== INVOICE NUMBERING ===================== -->
+        <Border Style="{StaticResource Panel}">
+          <StackPanel>
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Save" Padding="20,7" FontWeight="SemiBold"
+                      Command="{Binding SaveInvoiceNumberingCommand}"/>
+              <StackPanel>
+                <TextBlock Text="Invoice numbering" Style="{StaticResource SectionHead}"/>
+                <TextBlock Style="{StaticResource Hint}"
+                           Text="Set this before the first bill goes out. Invoice numbers are how a sale gets found again months later, so they should not change once customers are holding them."/>
+              </StackPanel>
+            </DockPanel>
+
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel Grid.Column="0">
+                <TextBlock Text="Prefix" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding InvoicePrefix, UpdateSourceTrigger=PropertyChanged}"/>
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="Next number" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding InvoiceNextNumber, UpdateSourceTrigger=PropertyChanged}"/>
+              </StackPanel>
+              <StackPanel Grid.Column="4">
+                <TextBlock Text="Pad to digits" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding InvoiceNumberPadding, UpdateSourceTrigger=PropertyChanged}"/>
+              </StackPanel>
+            </Grid>
+
+            <CheckBox Content="Start again from 1 each financial year (July)" Margin="0,16,0,0"
+                      IsChecked="{Binding InvoiceResetYearly}"/>
+
+            <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+                    CornerRadius="6" Padding="14" Margin="0,14,0,0" HorizontalAlignment="Left">
+              <StackPanel>
+                <TextBlock Text="NEXT INVOICE WILL BE" Foreground="#64748B" FontSize="10"
+                           FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding Preview}" FontSize="20" FontWeight="Bold"
+                           Foreground="#0F172A" Margin="0,4,0,0"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

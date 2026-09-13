@@ -1,0 +1,107 @@
+<Window x:Class="ShopApp.UI.Views.PaymentDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Payment In" Height="700" Width="720"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="White" ShowInTaskbar="False">
+
+  <Window.Resources>
+    <Style x:Key="FieldLabel" TargetType="TextBlock">
+      <Setter Property="Margin" Value="0,12,0,3"/>
+      <Setter Property="Foreground" Value="#64748B"/>
+      <Setter Property="FontSize" Value="12"/>
+    </Style>
+    <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+      <Setter Property="Padding" Value="6,5"/>
+    </Style>
+  </Window.Resources>
+
+  <DockPanel>
+
+    <Border DockPanel.Dock="Top" Background="#F8FAFC" BorderBrush="#E2E8F0"
+            BorderThickness="0,0,0,1" Padding="20,14">
+      <TextBlock x:Name="HeaderText" FontSize="17" FontWeight="Bold" Foreground="#0F172A"/>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Background="#F8FAFC" BorderBrush="#E2E8F0"
+            BorderThickness="0,1,0,0" Padding="20,12">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Content="Cancel" Padding="18,7" MinWidth="90" Click="Cancel_Click"
+                IsCancel="True"/>
+        <Button Content="Record payment" Padding="18,7" MinWidth="150" Margin="10,0,0,0"
+                FontWeight="SemiBold" Foreground="White" Background="#DC2626"
+                BorderThickness="0" Click="Save_Click" IsDefault="True"/>
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="20,4,20,16">
+
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="2*"/><ColumnDefinition Width="12"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0">
+          <TextBlock Text="Party *" Style="{StaticResource FieldLabel}"/>
+          <ComboBox x:Name="PartyBox" DisplayMemberPath="Name"
+                    SelectionChanged="PartyBox_SelectionChanged"/>
+        </StackPanel>
+        <StackPanel Grid.Column="2">
+          <TextBlock Text="Date" Style="{StaticResource FieldLabel}"/>
+          <DatePicker x:Name="DateBox"/>
+        </StackPanel>
+      </Grid>
+
+      <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+              CornerRadius="6" Padding="14" Margin="0,14,0,0">
+        <StackPanel>
+          <TextBlock x:Name="OutstandingCaption" Foreground="#64748B" FontSize="11"/>
+          <TextBlock x:Name="OutstandingValue" FontSize="20" FontWeight="Bold"
+                     Foreground="#B91C1C" Margin="0,3,0,0"/>
+          <TextBlock x:Name="OpenDocsText" Foreground="#94A3B8" FontSize="11"
+                     TextWrapping="Wrap" Margin="0,8,0,0"/>
+        </StackPanel>
+      </Border>
+
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/><ColumnDefinition Width="12"/>
+          <ColumnDefinition Width="*"/><ColumnDefinition Width="12"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0">
+          <TextBlock Text="Amount *" Style="{StaticResource FieldLabel}"/>
+          <TextBox x:Name="AmountBox" FontSize="15" FontWeight="SemiBold"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2">
+          <TextBlock Text="Mode" Style="{StaticResource FieldLabel}"/>
+          <ComboBox x:Name="ModeBox" SelectionChanged="ModeBox_SelectionChanged"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="4">
+          <TextBlock x:Name="ReferenceLabel" Text="Reference no"
+                     Style="{StaticResource FieldLabel}"/>
+          <TextBox x:Name="ReferenceBox"/>
+        </StackPanel>
+      </Grid>
+
+      <StackPanel x:Name="ChequePanel" Visibility="Collapsed">
+        <TextBlock Text="Cheque due date" Style="{StaticResource FieldLabel}"/>
+        <DatePicker x:Name="ChequeDueBox" HorizontalAlignment="Left" MinWidth="180"/>
+      </StackPanel>
+
+      <Button Content="Settle the full outstanding amount" Margin="0,14,0,0"
+              Padding="12,6" HorizontalAlignment="Left" Cursor="Hand"
+              Click="FullAmount_Click"/>
+
+      <TextBlock Text="Note (optional)" Style="{StaticResource FieldLabel}"/>
+      <TextBox x:Name="NotesBox" Height="52" AcceptsReturn="True" TextWrapping="Wrap"
+               VerticalScrollBarVisibility="Auto"/>
+
+    </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

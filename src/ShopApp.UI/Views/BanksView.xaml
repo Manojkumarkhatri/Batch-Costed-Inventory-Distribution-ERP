@@ -1,0 +1,288 @@
+<UserControl x:Class="ShopApp.UI.Views.BanksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:ShopApp.UI.Views">
+
+  <Grid Margin="14,12,14,12">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="330" MinWidth="260"/>
+      <ColumnDefinition Width="10"/>
+      <ColumnDefinition Width="*" MinWidth="420"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- ======================= the account list ======================= -->
+    <Border Grid.Column="0" Style="{StaticResource GridCard}">
+      <DockPanel>
+
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+
+          <Grid Grid.Column="0">
+            <TextBox x:Name="SearchBox"
+                     Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged, Delay=250}"/>
+            <TextBlock Text="Search account">
+              <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource Watermark}">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                      <Setter Property="Visibility" Value="Visible"/>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </TextBlock.Style>
+            </TextBlock>
+          </Grid>
+
+          <Button Grid.Column="1" Margin="8,0,0,0" Content="+  Add Bank"
+                  Style="{StaticResource SaleButton}" Command="{Binding NewCommand}"/>
+        </Grid>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+          <CheckBox Content="Inactive" IsChecked="{Binding ShowInactive}"/>
+          <Button Content="Clear" Margin="10,0,0,0" Style="{StaticResource ChipButton}"
+                  Command="{Binding ClearFiltersCommand}"/>
+        </StackPanel>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}"
+                   Style="{StaticResource StatusLine}"/>
+
+        <DataGrid ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedRow}"
+                  IsReadOnly="True" CanUserSortColumns="False"
+                  HorizontalScrollBarVisibility="Disabled">
+          <DataGrid.RowStyle>
+            <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                  <Setter Property="Foreground" Value="{StaticResource Faint}"/>
+                  <Setter Property="FontStyle" Value="Italic"/>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </DataGrid.RowStyle>
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="ACCOUNT" Binding="{Binding Name}" Width="*"
+                                ElementStyle="{StaticResource TextCell}"/>
+            <DataGridTextColumn Header="AMOUNT" Width="120"
+                                HeaderStyle="{StaticResource NumberColumnHeader}"
+                                Binding="{Binding Balance, StringFormat=N0}">
+              <DataGridTextColumn.ElementStyle>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource MoneyInCell}">
+                  <Style.Triggers>
+                    <!-- An overdrawn account is the one thing worth catching here. -->
+                    <DataTrigger Binding="{Binding IsOverdrawn}" Value="True">
+                      <Setter Property="Foreground" Value="{StaticResource Negative}"/>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </DataGridTextColumn.ElementStyle>
+            </DataGridTextColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+    </Border>
+
+    <!-- ===================== the account statement ===================== -->
+    <Grid Grid.Column="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="10"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+
+      <Border Grid.Row="0" Style="{StaticResource Card}"
+              Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+        <StackPanel>
+
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+              <Button Content="Remove" Style="{StaticResource DangerButton}" Margin="0,0,8,0"
+                      Command="{Binding DeleteCommand}"
+                      ToolTip="An account with movements is deactivated, not deleted"/>
+              <Button Content="Edit" Margin="0,0,8,0" Command="{Binding EditCommand}"/>
+
+              <!-- Everything money can do, in one menu, as in his software. -->
+              <Menu Background="Transparent" VerticalAlignment="Center">
+                <MenuItem Header="Deposit / Withdraw  ▾" Padding="14,7"
+                          Foreground="White" Background="{StaticResource Accent}"
+                          FontWeight="SemiBold">
+                  <MenuItem Header="Deposit"          Command="{Binding DepositCommand}"/>
+                  <MenuItem Header="Withdraw"         Command="{Binding WithdrawCommand}"/>
+                  <Separator/>
+                  <MenuItem Header="Bank to cash"     Command="{Binding BankToCashCommand}"/>
+                  <MenuItem Header="Cash to bank"     Command="{Binding CashToBankCommand}"/>
+                  <MenuItem Header="Bank to bank"     Command="{Binding BankToBankCommand}"/>
+                  <Separator/>
+                  <MenuItem Header="Adjust balance"   Command="{Binding AdjustCommand}"
+                            ToolTip="Correct the book balance to match the statement"/>
+                </MenuItem>
+              </Menu>
+            </StackPanel>
+
+            <StackPanel>
+              <TextBlock Text="{Binding SelectedAccount.Name}" Style="{StaticResource PageTitle}"
+                         TextTrimming="CharacterEllipsis"/>
+              <TextBlock Style="{StaticResource Hint}"
+                         Text="{Binding SelectedAccount.BankName, Converter={StaticResource Dash}}"/>
+            </StackPanel>
+          </DockPanel>
+
+          <UniformGrid Columns="4" Margin="0,18,-10,0">
+            <Border Style="{StaticResource StatTile}">
+              <StackPanel>
+                <TextBlock Text="{Binding BalanceCaption}" Style="{StaticResource StatCaption}"/>
+                <TextBlock Text="{Binding SelectedBalance, StringFormat=Rs {0:N0}}">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource FigureSmall}">
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding BalanceCaption}" Value="OVERDRAWN">
+                          <Setter Property="Foreground" Value="{StaticResource Negative}"/>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBlock.Style>
+                </TextBlock>
+              </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatTile}">
+              <StackPanel>
+                <TextBlock Text="ACCOUNT NO" Style="{StaticResource StatCaption}"/>
+                <TextBlock Style="{StaticResource FigureSmall}" FontSize="14"
+                           Text="{Binding SelectedAccount.AccountNumber, Converter={StaticResource Dash}}"/>
+              </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatTile}">
+              <StackPanel>
+                <TextBlock Text="BRANCH / IBAN" Style="{StaticResource StatCaption}"/>
+                <TextBlock Style="{StaticResource FigureSmall}" FontSize="13"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding SelectedAccount.BranchOrIban, Converter={StaticResource Dash}}"/>
+              </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatTile}">
+              <StackPanel>
+                <TextBlock Text="ON INVOICES" Style="{StaticResource StatCaption}"/>
+                <TextBlock FontSize="14">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource FigureSmall}">
+                      <Setter Property="Text" Value="No"/>
+                      <Setter Property="Foreground" Value="{StaticResource Faint}"/>
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedAccount.PrintOnInvoice}" Value="True">
+                          <Setter Property="Text" Value="Printed"/>
+                          <Setter Property="Foreground" Value="{StaticResource Positive}"/>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBlock.Style>
+                </TextBlock>
+              </StackPanel>
+            </Border>
+          </UniformGrid>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Row="2" Style="{StaticResource GridCard}"
+              Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+        <DockPanel>
+          <DockPanel DockPanel.Dock="Top" Margin="2,0,0,12">
+            <Button DockPanel.Dock="Right" Content="Delete movement"
+                    Style="{StaticResource DangerButton}"
+                    Command="{Binding DeleteTransactionCommand}"
+                    CommandParameter="{Binding SelectedItem, ElementName=Moves}"/>
+            <TextBlock Text="TRANSACTIONS" Style="{StaticResource Micro}"
+                       VerticalAlignment="Center"/>
+          </DockPanel>
+
+          <Grid>
+            <!-- Oldest first, so the balance column reads as a running total.
+                 Sorting is off for the same reason it is on a party ledger. -->
+            <DataGrid x:Name="Moves" ItemsSource="{Binding Statement}" IsReadOnly="True"
+                      CanUserSortColumns="False">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="DATE" Width="120"
+                                    ElementStyle="{StaticResource DateCell}"
+                                    Binding="{Binding Date, StringFormat=dd-MM-yyyy}"/>
+
+                <DataGridTemplateColumn Header="TYPE" Width="1.6*">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Border Margin="14,0">
+                        <Border.Style>
+                          <Style TargetType="Border" BasedOn="{StaticResource Badge}">
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding IsIn}" Value="True">
+                                <Setter Property="Background" Value="{StaticResource PositiveWash}"/>
+                              </DataTrigger>
+                              <DataTrigger Binding="{Binding IsIn}" Value="False">
+                                <Setter Property="Background" Value="{StaticResource NegativeWash}"/>
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding TypeLabel}" Style="{StaticResource BadgeText}"/>
+                      </Border>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Header="DESCRIPTION" Width="2*"
+                                    ElementStyle="{StaticResource TextCell}"
+                                    Binding="{Binding Description, Converter={StaticResource Dash}}"/>
+
+                <DataGridTextColumn Header="AMOUNT" Width="140"
+                                    HeaderStyle="{StaticResource NumberColumnHeader}"
+                                    Binding="{Binding Amount, StringFormat=N0}">
+                  <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource MoneyOutCell}">
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsIn}" Value="True">
+                          <Setter Property="Foreground" Value="{StaticResource Positive}"/>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Header="BALANCE" Width="140"
+                                    HeaderStyle="{StaticResource NumberColumnHeader}"
+                                    ElementStyle="{StaticResource MoneyCell}"
+                                    Binding="{Binding Balance, StringFormat=N0}"/>
+              </DataGrid.Columns>
+            </DataGrid>
+
+            <v:EmptyState Message="No movements on this account"
+                          Hint="Use Deposit / Withdraw to record money in or out."
+                          Visibility="{Binding HasItems, ElementName=Moves,
+                                       Converter={StaticResource NotToVis}}"/>
+          </Grid>
+        </DockPanel>
+      </Border>
+
+      <Border Grid.Row="0" Grid.RowSpan="3">
+        <Border.Style>
+          <Style TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding HasSelection}" Value="False">
+                <Setter Property="Visibility" Value="Visible"/>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Border.Style>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+          <TextBlock Text="Pick an account on the left" Style="{StaticResource SectionHead}"
+                     Foreground="{StaticResource Faint}" HorizontalAlignment="Center"/>
+          <TextBlock Text="Its balance and full statement appear here."
+                     Style="{StaticResource Hint}" HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

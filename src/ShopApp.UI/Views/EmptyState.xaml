@@ -1,0 +1,39 @@
+<!--
+  Shown in place of an empty grid. A table with headers and nothing under
+  them looks broken; this says the query ran and found nothing.
+
+  Usage: put it in the same Grid cell as the DataGrid and bind its
+  Visibility to the grid's HasItems.
+
+    <Grid>
+      <DataGrid x:Name="Rows" ItemsSource="{Binding Sales}"/>
+      <views:EmptyState Message="No records found"
+                        Visibility="{Binding HasItems, ElementName=Rows,
+                                     Converter={StaticResource NotToVis}}"/>
+    </Grid>
+-->
+<UserControl x:Class="ShopApp.UI.Views.EmptyState"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root" IsHitTestVisible="False">
+
+  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,40">
+
+    <!-- An open box. Deliberately faint: it is a state, not a warning. -->
+    <Path Width="56" Height="56" Stretch="Uniform" HorizontalAlignment="Center"
+          Stroke="{StaticResource Faint}" StrokeThickness="1.2"
+          StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+          Data="M12 3.5 L20.5 7.5 L12 11.5 L3.5 7.5 Z
+                M3.5 7.5 V16.5 L12 20.5 L20.5 16.5 V7.5
+                M12 11.5 V20.5"/>
+
+    <TextBlock Text="{Binding Message, ElementName=Root}"
+               HorizontalAlignment="Center" Margin="0,16,0,0"
+               FontSize="15" Foreground="{StaticResource Faint}"/>
+
+    <TextBlock Text="{Binding Hint, ElementName=Root}"
+               HorizontalAlignment="Center" Margin="0,6,0,0"
+               TextWrapping="Wrap" MaxWidth="340" TextAlignment="Center"
+               FontSize="12" Foreground="{StaticResource Faint}" Opacity="0.8"/>
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,45 @@
+<Window x:Class="ShopApp.UI.Views.SalesChartWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:ShopApp.UI.Views"
+        Title="Sales" Height="640" Width="1180"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource Canvas}" ShowInTaskbar="False">
+
+  <DockPanel Margin="16">
+
+    <Border DockPanel.Dock="Top" Style="{StaticResource FilterBar}" Margin="0,0,0,12">
+      <DockPanel>
+        <!-- Granularity. Daily over a year is a smear, so the same range can
+             be read week by week, month by month or year by year. -->
+        <Border DockPanel.Dock="Right" Background="#F1F3F7" CornerRadius="9" Padding="3">
+          <StackPanel Orientation="Horizontal">
+            <Button Content="Daily"   Style="{StaticResource SegButton}" Click="Grain_Click" Tag="Daily"/>
+            <Button Content="Weekly"  Style="{StaticResource SegButton}" Click="Grain_Click" Tag="Weekly"/>
+            <Button Content="Monthly" Style="{StaticResource SegButton}" Click="Grain_Click" Tag="Monthly"/>
+            <Button Content="Yearly"  Style="{StaticResource SegButton}" Click="Grain_Click" Tag="Yearly"/>
+          </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="From" Style="{StaticResource InlineLabel}"/>
+          <DatePicker x:Name="FromBox" Width="145" SelectedDateChanged="Range_Changed"/>
+          <TextBlock Text="to" Style="{StaticResource InlineLabel}" Margin="12,0,7,0"/>
+          <DatePicker x:Name="ToBox" Width="145" SelectedDateChanged="Range_Changed"/>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <Border Style="{StaticResource Card}">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+          <TextBlock Text="TOTAL SALE" Style="{StaticResource KpiLabel}"/>
+          <TextBlock x:Name="TotalText" Style="{StaticResource KpiValue}"/>
+          <TextBlock x:Name="GrainNote" Style="{StaticResource Hint}"/>
+        </StackPanel>
+
+        <v:SalesChart x:Name="Chart"/>
+      </DockPanel>
+    </Border>
+  </DockPanel>
+</Window>

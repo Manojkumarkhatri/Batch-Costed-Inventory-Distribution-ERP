@@ -1,0 +1,213 @@
+<Window x:Class="ShopApp.UI.Views.InvoicePrintSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Invoice Print" Height="620" Width="520"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize">
+
+  <Window.Resources>
+    <Style x:Key="SectionHeader" TargetType="Border">
+      <Setter Property="Background" Value="#EAF3FA"/>
+      <Setter Property="Padding" Value="14,9"/>
+    </Style>
+    <Style x:Key="RowBorder" TargetType="Border">
+      <Setter Property="BorderBrush" Value="#EFEFEF"/>
+      <Setter Property="BorderThickness" Value="0,0,0,1"/>
+      <Setter Property="Padding" Value="14,12"/>
+    </Style>
+    <Style x:Key="RowLabel" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style x:Key="RowHint" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="Foreground" Value="#8A8A8A"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="Margin" Value="0,2,0,0"/>
+    </Style>
+  </Window.Resources>
+
+  <DockPanel>
+
+    <Border DockPanel.Dock="Top" Background="#EAF3FA" Padding="16,14">
+      <StackPanel>
+        <TextBlock Text="Invoice Print" FontSize="17" FontWeight="SemiBold"
+                   Foreground="#1B4E63"/>
+        <TextBlock Text="These apply to this invoice only. Set them per bill."
+                   FontSize="11" Foreground="#4B7A8C" Margin="0,3,0,0"/>
+      </StackPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Padding="14" Background="#FAFAFA"
+            BorderBrush="#E5E7EB" BorderThickness="0,1,0,0">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Content="Reset to defaults" Padding="12,7" Margin="0,0,8,0"
+                Click="ResetDefaults_Click"/>
+        <Button Content="Done" Padding="26,7" FontWeight="SemiBold"
+                Background="#1B7A9E" Foreground="White" BorderThickness="0"
+                Click="Done_Click"/>
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+
+        <Border Style="{StaticResource SectionHeader}">
+          <TextBlock Text="Totals" FontWeight="Bold" Foreground="#1B4E63"/>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center"
+                      IsChecked="{Binding ShowTotalItemQuantity}"/>
+            <StackPanel>
+              <TextBlock Text="Total Item Quantity" Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="Prints the sum of all quantities under the item table."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center"
+                      IsChecked="{Binding ShowDecimals}"/>
+            <StackPanel>
+              <TextBlock Text="Amount with Decimal (eg 0.00)" Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="Off prints Rs 951,250. On prints Rs 951,250.00."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center"
+                      IsChecked="{Binding ShowReceivedAmount}"/>
+            <StackPanel>
+              <TextBlock Text="Received amount" Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="Adds a Received row showing what was paid on this bill."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center"
+                      IsChecked="{Binding ShowBalanceAmount}"/>
+            <StackPanel>
+              <TextBlock Text="Balance amount" Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="Adds a Balance row showing what is still owed on this bill."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center"
+                      IsChecked="{Binding ShowPartyCurrentBalance}"/>
+            <StackPanel>
+              <TextBlock Text="Print Current Balance of Party" Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="The party's whole outstanding, not just this bill."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center"
+                      IsChecked="{Binding GroupDigits}"/>
+            <StackPanel>
+              <TextBlock Text="Amount Grouping" Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="On prints 951,250. Off prints 951250."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource SectionHeader}">
+          <TextBlock Text="Layout" FontWeight="Bold" Foreground="#1B4E63"/>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center"
+                      IsChecked="{Binding ExpandTableToWholePage}"/>
+            <StackPanel>
+              <TextBlock Text="Expand table to print on whole page"
+                         Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="Pushes the totals block to the bottom of the page."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <TextBox DockPanel.Dock="Right" Width="70" TextAlignment="Center"
+                     VerticalAlignment="Center"
+                     Text="{Binding MinimumRowsInItemTable, UpdateSourceTrigger=PropertyChanged}"/>
+            <StackPanel>
+              <TextBlock Text="Min. No. of rows in Item Table"
+                         Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="Pads short bills with blank rows. 0 means no padding."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource SectionHeader}">
+          <TextBlock Text="Words and payment" FontWeight="Bold" Foreground="#1B4E63"/>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <ComboBox DockPanel.Dock="Right" Width="150" VerticalAlignment="Center"
+                      SelectedIndex="{Binding WordsFormatIndex}">
+              <ComboBoxItem Content="English (10,000,000)"/>
+              <ComboBoxItem Content="Indian (1 Crore)"/>
+            </ComboBox>
+            <StackPanel>
+              <TextBlock Text="Amount in words format" Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="{Binding WordsPreview}" Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <ComboBox DockPanel.Dock="Right" Width="110" VerticalAlignment="Center"
+                      ItemsSource="{Binding PaymentTypes}"
+                      SelectedItem="{Binding PaymentTypeLabel}"/>
+            <StackPanel>
+              <TextBlock Text="Payment Type" Style="{StaticResource RowLabel}"/>
+              <TextBlock Text="Printed under Payment Type on the bill."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <Border Style="{StaticResource SectionHeader}">
+          <TextBlock Text="Tax" FontWeight="Bold" Foreground="#1B4E63"/>
+        </Border>
+
+        <Border Style="{StaticResource RowBorder}">
+          <DockPanel>
+            <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center"
+                      IsEnabled="False" IsChecked="False"/>
+            <StackPanel>
+              <TextBlock Text="Tax details" Style="{StaticResource RowLabel}"
+                         Foreground="#9CA3AF"/>
+              <TextBlock Text="Off - he trades tax free. Turn this on only if he registers with FBR."
+                         Style="{StaticResource RowHint}"/>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

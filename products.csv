@@ -1,0 +1,36 @@
+Name,Category,BaseUnit,AltUnit,ConversionFactor,PurchasePrice,SalePrice,ReorderLevel,NearExpiryDays
+Yeast,Solid,KG,Carton,10,0,0,0,90
+Milk Powder,Solid,KG,Bag,25,0,0,0,90
+Till,Solid,KG,Bag,40,0,0,0,90
+Elaichi,Solid,KG,Carton,5,0,0,0,90
+Elaichi RS=1,Solid,KG,Carton,5,0,0,0,90
+Vyzon,Solid,KG,Bag,10,0,0,0,90
+Eka-300,Solid,KG,Carton,10,0,0,0,90
+Vannillin Powder,Solid,Box,Carton,40,0,0,0,90
+Food Color,Solid,KG,Drum,25,0,0,0,90
+M-300,Solid,KG,Bag,10,0,0,0,90
+Coconut Powder,Solid,KG,Bag,50,0,0,0,90
+Kishmish,Solid,KG,Carton,10,0,0,0,90
+Glucose,Solid,KG,Bag,25,0,0,0,90
+Taper,Solid,Piece,Carton,192,0,0,0,90
+Baking Powder,Solid,KG,Carton,12,0,0,0,90
+Fresh Yeast,Frozen,KG,Carton,10,0,0,0,30
+Liquid Yeast,Liquid,Liter,Carton,10,0,0,0,60
+Liquid Glucose,Liquid,KG,Drum,25,0,0,0,60
+Cheez Morzalla,Frozen,KG,Carton,16,0,0,0,30
+Cheez Chader,Frozen,KG,Carton,16,0,0,0,30
+Cheez Pizza,Frozen,KG,Carton,16,0,0,0,30
+Chocolate Syrup,Liquid,Liter,Cane,32,0,0,0,60
+Stawberry Syrup,Liquid,Liter,Cane,32,0,0,0,60
+Pineapple Syrup,Liquid,Liter,Cane,32,0,0,0,60
+Vannilla Syrup,Liquid,Liter,Cane,32,0,0,0,60
+Liquid Sugar,Liquid,KG,Cane,20,0,0,0,60
+Shining Oil,Liquid,Liter,Carton,10,0,0,0,60
+Cake Gel,Liquid,KG,Carton,12,0,0,0,60
+Milly Syrup,Liquid,Liter,Cane,32,0,0,0,60
+Milky Syrup 005PP,Liquid,Liter,Cane,32,0,0,0,60
+Liquid Calcium,Liquid,Bottel,Carton,12,0,0,0,60
+Vitamin C Liquid,Liquid,Bottel,Carton,12,0,0,0,60
+Shortning,Liquid,KG,Carton,16,0,0,0,60
+Clove Oil,Liquid,Bottel,Carton,12,0,0,0,60
+Lemon OIL,Liquid,Bottel,Carton,12,0,0,0,60

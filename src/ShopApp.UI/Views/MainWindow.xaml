@@ -1,0 +1,546 @@
+<Window x:Class="ShopApp.UI.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:ShopApp.UI.Converters"
+        xmlns:v="clr-namespace:ShopApp.UI.Views"
+        Title="Shop Manager" Height="800" Width="1320"
+        WindowStartupLocation="CenterScreen"
+        Background="#F8FAFC">
+
+  <Window.InputBindings>
+    <!-- Shopkeepers work on the keyboard, not the mouse. -->
+    <KeyBinding Key="F2" Command="{Binding NewSaleCommand}"/>
+    <KeyBinding Key="F3" Command="{Binding NewPurchaseCommand}"/>
+    <KeyBinding Key="F9" Command="{Binding BackupNowCommand}"/>
+  </Window.InputBindings>
+
+  <Window.Resources>
+
+    <conv:NavActiveConverter x:Key="NavActive"/>
+
+    <!-- ============================ icons ============================
+         Drawn as stroked paths rather than an icon font, so they render
+         identically on any Windows build and recolour with the button. -->
+    <Geometry x:Key="IcoHome">M4 10.5 L12 4 L20 10.5 M6.5 9.2 V19.5 H17.5 V9.2 M10 19.5 V14 H14 V19.5</Geometry>
+    <Geometry x:Key="IcoParties">M6.2 8 A2.8 2.8 0 0 1 11.8 8 A2.8 2.8 0 0 1 6.2 8 M4 19.5 C4 15.8 6.3 14 9 14 C11.7 14 14 15.8 14 19.5 M14.3 9 A2.2 2.2 0 0 1 18.7 9 A2.2 2.2 0 0 1 14.3 9 M16 14.2 C18.6 14.4 20 16.3 20 19.5</Geometry>
+    <Geometry x:Key="IcoItems">M12 3.5 L20.5 7.5 L12 11.5 L3.5 7.5 Z M3.5 7.5 V16.5 L12 20.5 L20.5 16.5 V7.5 M12 11.5 V20.5</Geometry>
+    <Geometry x:Key="IcoSale">M6 3.5 H18 V20.5 L15.5 19 L13 20.5 L10.5 19 L8 20.5 L6 19 Z M9 8 H15 M9 11.5 H15 M9 15 H13</Geometry>
+    <Geometry x:Key="IcoPurchase">M3 4.5 H5.5 L8 15.5 H18.5 L20.5 8 H6.2 M8.2 18.8 A1.3 1.3 0 0 1 10.8 18.8 A1.3 1.3 0 0 1 8.2 18.8 M15.7 18.8 A1.3 1.3 0 0 1 18.3 18.8 A1.3 1.3 0 0 1 15.7 18.8</Geometry>
+    <Geometry x:Key="IcoStock">M12 3.5 L21 8 L12 12.5 L3 8 Z M3 12 L12 16.5 L21 12 M3 16 L12 20.5 L21 16</Geometry>
+    <Geometry x:Key="IcoBank">M3.5 9.5 L12 4 L20.5 9.5 M4.5 9.5 V18.5 M9 9.5 V18.5
+                              M15 9.5 V18.5 M19.5 9.5 V18.5 M3 20.5 H21</Geometry>
+    <Geometry x:Key="IcoReports">M4.5 19.5 H20 M7.5 19.5 V12 M11.8 19.5 V6.5 M16 19.5 V15</Geometry>
+    <Geometry x:Key="IcoExpenses">M4 8.5 H20 A1.5 1.5 0 0 1 20 8.5 M3.5 8.5 V17.5 A1.5 1.5 0 0 0 5 19 H19 A1.5 1.5 0 0 0 20.5 17.5 V8.5 A1.5 1.5 0 0 0 19 7 H5 A1.5 1.5 0 0 0 3.5 8.5 M6.5 5 H17.5 M16.5 13.5 A1.2 1.2 0 0 1 18.9 13.5 A1.2 1.2 0 0 1 16.5 13.5</Geometry>
+    <Geometry x:Key="IcoSettings">M4 7.5 H20 M4 12 H20 M4 16.5 H20 M7.4 7.5 A1.6 1.6 0 0 1 10.6 7.5 A1.6 1.6 0 0 1 7.4 7.5 M13.4 12 A1.6 1.6 0 0 1 16.6 12 A1.6 1.6 0 0 1 13.4 12 M6.4 16.5 A1.6 1.6 0 0 1 9.6 16.5 A1.6 1.6 0 0 1 6.4 16.5</Geometry>
+
+    <Geometry x:Key="IcoArrowDown">M12 5 V18 M6.5 12.5 L12 18.5 L17.5 12.5</Geometry>
+    <Geometry x:Key="IcoArrowUp">M12 19 V6 M6.5 11.5 L12 5.5 L17.5 11.5</Geometry>
+    <Geometry x:Key="IcoChevron">M9 5 L16 12 L9 19</Geometry>
+
+    <!-- ========================= rail button ========================= -->
+    <Style x:Key="NavButton" TargetType="ButtonBase">
+      <Setter Property="Foreground" Value="#94A3B8"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Height" Value="64"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ButtonBase">
+            <Border x:Name="Root" Background="{TemplateBinding Background}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Root" Property="Background" Value="#1E293B"/>
+                <Setter Property="Foreground" Value="#F1F5F9"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Style.Triggers>
+        <DataTrigger Value="True">
+          <DataTrigger.Binding>
+            <MultiBinding Converter="{StaticResource NavActive}">
+              <Binding Path="DataContext.ActiveNav" RelativeSource="{RelativeSource AncestorType=Window}"/>
+              <Binding Path="Tag" RelativeSource="{RelativeSource Self}"/>
+            </MultiBinding>
+          </DataTrigger.Binding>
+          <Setter Property="Foreground" Value="#FFFFFF"/>
+          <Setter Property="Background" Value="#2563EB"/>
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+
+    <!-- ====================== flyout menu entry ====================== -->
+    <Style x:Key="FlyoutItem" TargetType="Button">
+      <Setter Property="Foreground" Value="#E2E8F0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Root" Background="Transparent" Padding="18,10">
+              <ContentPresenter/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Root" Property="Background" Value="#1E293B"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="#64748B"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- ===================== dashboard cards =====================
+         The dashboard is the one screen with figure tiles of its own.
+         These sit on the system styles rather than redefining them.
+    -->
+    <Style x:Key="CardCaption" TargetType="TextBlock" BasedOn="{StaticResource KpiLabel}"/>
+    <Style x:Key="CardFigure" TargetType="TextBlock" BasedOn="{StaticResource KpiValue}"/>
+
+    <!-- One shortcut in the Most Used Reports strip. -->
+    <Style x:Key="ReportCard" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="Padding" Value="14,12"/>
+      <Setter Property="Margin" Value="0,0,10,0"/>
+    </Style>
+
+    <!-- Section host: a TabControl with its tab strip removed, so every
+         screen keeps its own XAML while the rail does the navigating. -->
+    <Style x:Key="SectionHost" TargetType="TabControl">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TabControl">
+            <ContentPresenter x:Name="PART_SelectedContentHost"
+                              ContentSource="SelectedContent"/>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+  </Window.Resources>
+
+  <DockPanel>
+
+    <!-- Backup status bar. Red and unmissable when stale. Above everything,
+         including the rail, because a missing backup outranks navigation. -->
+    <Border DockPanel.Dock="Top" Padding="12,6"
+            Background="{Binding BackupStatusBrush}">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Content="Backup now (F9)"
+                Command="{Binding BackupNowCommand}" Padding="10,3"/>
+        <TextBlock Text="{Binding BackupStatusText}" FontWeight="SemiBold"
+                   Foreground="White" VerticalAlignment="Center" FontSize="13"/>
+      </DockPanel>
+    </Border>
+
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="80"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- =========================== LEFT RAIL =========================== -->
+      <Border Grid.Column="0" Background="#0F172A">
+        <StackPanel>
+
+          <Button Style="{StaticResource NavButton}" Tag="home"
+                  Command="{Binding NavigateCommand}" CommandParameter="home">
+            <StackPanel>
+              <Path Data="{StaticResource IcoHome}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Home" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </Button>
+
+          <Button Style="{StaticResource NavButton}" Tag="parties"
+                  Command="{Binding NavigateCommand}" CommandParameter="parties">
+            <StackPanel>
+              <Path Data="{StaticResource IcoParties}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Parties" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </Button>
+
+          <Button Style="{StaticResource NavButton}" Tag="items"
+                  Command="{Binding NavigateCommand}" CommandParameter="items">
+            <StackPanel>
+              <Path Data="{StaticResource IcoItems}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Items" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </Button>
+
+          <!-- Sale: flyout, because Payment-In and returns live under it -->
+          <ToggleButton x:Name="SaleMenu" Style="{StaticResource NavButton}" Tag="sale">
+            <StackPanel>
+              <Path Data="{StaticResource IcoSale}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Sale" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </ToggleButton>
+          <Popup IsOpen="{Binding IsChecked, ElementName=SaleMenu}"
+                 PlacementTarget="{Binding ElementName=SaleMenu}" Placement="Right"
+                 StaysOpen="False" AllowsTransparency="True">
+            <Border Background="#0F172A" CornerRadius="0,6,6,0" MinWidth="200"
+                    BorderBrush="#1E293B" BorderThickness="0,1,1,1">
+              <StackPanel>
+                <Button Style="{StaticResource FlyoutItem}" Content="Sale Invoices"
+                        Command="{Binding NavigateCommand}" CommandParameter="sale"
+                        Click="FlyoutItem_Click"/>
+                <Button Style="{StaticResource FlyoutItem}" Content="Payment-In"
+                        Command="{Binding NavigateCommand}" CommandParameter="paymentin"
+                        Click="FlyoutItem_Click"/>
+              </StackPanel>
+            </Border>
+          </Popup>
+
+          <!-- Purchase: flyout, because Payment-Out lives under it -->
+          <ToggleButton x:Name="PurchaseMenu" Style="{StaticResource NavButton}" Tag="purchase">
+            <StackPanel>
+              <Path Data="{StaticResource IcoPurchase}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Purchase" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </ToggleButton>
+          <Popup IsOpen="{Binding IsChecked, ElementName=PurchaseMenu}"
+                 PlacementTarget="{Binding ElementName=PurchaseMenu}" Placement="Right"
+                 StaysOpen="False" AllowsTransparency="True">
+            <Border Background="#0F172A" CornerRadius="0,6,6,0" MinWidth="200"
+                    BorderBrush="#1E293B" BorderThickness="0,1,1,1">
+              <StackPanel>
+                <Button Style="{StaticResource FlyoutItem}" Content="Purchase Bills"
+                        Command="{Binding NavigateCommand}" CommandParameter="purchase"
+                        Click="FlyoutItem_Click"/>
+                <Button Style="{StaticResource FlyoutItem}" Content="Payment-Out"
+                        Command="{Binding NavigateCommand}" CommandParameter="paymentout"
+                        Click="FlyoutItem_Click"/>
+              </StackPanel>
+            </Border>
+          </Popup>
+
+          <!-- Stock: flyout over the three stock screens -->
+          <ToggleButton x:Name="StockMenu" Style="{StaticResource NavButton}" Tag="stock">
+            <StackPanel>
+              <Path Data="{StaticResource IcoStock}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Stock" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </ToggleButton>
+          <Popup IsOpen="{Binding IsChecked, ElementName=StockMenu}"
+                 PlacementTarget="{Binding ElementName=StockMenu}" Placement="Right"
+                 StaysOpen="False" AllowsTransparency="True">
+            <Border Background="#0F172A" CornerRadius="0,6,6,0" MinWidth="200"
+                    BorderBrush="#1E293B" BorderThickness="0,1,1,1">
+              <StackPanel>
+                <Button Style="{StaticResource FlyoutItem}" Content="Stock Summary"
+                        Command="{Binding NavigateCommand}" CommandParameter="stock"
+                        Click="FlyoutItem_Click"/>
+                <Button Style="{StaticResource FlyoutItem}" Content="Near Expiry Stock"
+                        Command="{Binding NavigateCommand}" CommandParameter="expiry"
+                        Click="FlyoutItem_Click"/>
+                <Button Style="{StaticResource FlyoutItem}" Content="Opening Stock"
+                        Command="{Binding NavigateCommand}" CommandParameter="opening"
+                        Click="FlyoutItem_Click"/>
+              </StackPanel>
+            </Border>
+          </Popup>
+
+          <Button Style="{StaticResource NavButton}" Tag="expenses"
+                  Command="{Binding NavigateCommand}" CommandParameter="expenses">
+            <StackPanel>
+              <Path Data="{StaticResource IcoExpenses}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Expenses" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </Button>
+
+          <Button Style="{StaticResource NavButton}" Tag="banks"
+                  Command="{Binding NavigateCommand}" CommandParameter="banks">
+            <StackPanel>
+              <Path Data="{StaticResource IcoBank}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Banks" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </Button>
+
+          <Button Style="{StaticResource NavButton}" Tag="reports"
+                  Command="{Binding NavigateCommand}" CommandParameter="reports">
+            <StackPanel>
+              <Path Data="{StaticResource IcoReports}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Reports" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </Button>
+
+          <Button Style="{StaticResource NavButton}" Tag="settings"
+                  Command="{Binding NavigateCommand}" CommandParameter="settings">
+            <StackPanel>
+              <Path Data="{StaticResource IcoSettings}" Width="24" Height="24" Stretch="Uniform"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"
+                    StrokeThickness="1.6" StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              <TextBlock Text="Settings" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+          </Button>
+
+        </StackPanel>
+      </Border>
+
+      <!-- ========================= RIGHT: CONTENT ========================= -->
+      <DockPanel Grid.Column="1">
+
+        <!-- Page header. The rail already says which section is open, so
+             this is one line, not a banner. -->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Surface}"
+                BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1"
+                Padding="18,10">
+          <TextBlock Text="{Binding SectionTitle}" FontSize="16" FontWeight="SemiBold"
+                     Foreground="{StaticResource Ink}"/>
+        </Border>
+
+        <!-- section host. The order of these TabItems is the index map in
+             MainViewModel.Sections - keep them in step. -->
+        <TabControl Style="{StaticResource SectionHost}"
+                    SelectedIndex="{Binding SelectedSection}" Margin="10">
+
+          <!-- ====================== 0 Dashboard ====================== -->
+          <TabItem>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <StackPanel Margin="6">
+
+                <!-- top tiles: his money out and in, then the two things that
+                     rot or run out. Vyapar has the first pair; the second pair
+                     is what perishable stock actually needs. -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
+
+                  <Border Grid.Column="0" Style="{StaticResource Card}">
+                    <DockPanel>
+                      <Grid DockPanel.Dock="Right" VerticalAlignment="Top">
+                        <Ellipse Width="40" Height="40" Fill="#DCFCE7"/>
+                        <Path Data="{StaticResource IcoArrowDown}" Width="18" Height="18"
+                              Stretch="Uniform" Stroke="#15803D" StrokeThickness="2"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                      </Grid>
+                      <StackPanel>
+                        <TextBlock Text="Total Receivable" Style="{StaticResource CardCaption}"/>
+                        <TextBlock Style="{StaticResource CardFigure}"
+                                   Text="{Binding TotalReceivable, StringFormat=Rs {0:N0}}"/>
+                        <TextBlock Foreground="#94A3B8" FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,8,0,0" Text="Nobody owes you anything right now.">
+                          <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                              <Setter Property="Visibility" Value="Collapsed"/>
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding TotalReceivable}" Value="0">
+                                  <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </TextBlock.Style>
+                        </TextBlock>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+
+                  <Border Grid.Column="1" Style="{StaticResource Card}">
+                    <DockPanel>
+                      <Grid DockPanel.Dock="Right" VerticalAlignment="Top">
+                        <Ellipse Width="40" Height="40" Fill="#FEE2E2"/>
+                        <Path Data="{StaticResource IcoArrowUp}" Width="18" Height="18"
+                              Stretch="Uniform" Stroke="#B91C1C" StrokeThickness="2"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                      </Grid>
+                      <StackPanel>
+                        <TextBlock Text="Total Payable" Style="{StaticResource CardCaption}"/>
+                        <TextBlock Style="{StaticResource CardFigure}"
+                                   Text="{Binding TotalPayable, StringFormat=Rs {0:N0}}"/>
+                        <TextBlock Foreground="#94A3B8" FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,8,0,0" Text="You don't owe any supplier right now.">
+                          <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                              <Setter Property="Visibility" Value="Collapsed"/>
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding TotalPayable}" Value="0">
+                                  <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </TextBlock.Style>
+                        </TextBlock>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+
+                  <Border Grid.Column="2" Style="{StaticResource Card}"
+                          Background="#FFFBEB" BorderBrush="#FDE68A">
+                    <StackPanel>
+                      <TextBlock Text="Near expiry (30 days)" Foreground="#92400E" FontSize="13"/>
+                      <TextBlock Text="{Binding NearExpiryCount}" Style="{StaticResource CardFigure}"
+                                 Foreground="#92400E"/>
+                      <TextBlock Text="batches to move or discount" Foreground="#B45309"
+                                 FontSize="12" Margin="0,8,0,0"/>
+                    </StackPanel>
+                  </Border>
+
+                  <Border Grid.Column="3" Style="{StaticResource Card}"
+                          Background="#FEF2F2" BorderBrush="#FECACA">
+                    <StackPanel>
+                      <TextBlock Text="Low stock" Foreground="#991B1B" FontSize="13"/>
+                      <TextBlock Text="{Binding LowStockCount}" Style="{StaticResource CardFigure}"
+                                 Foreground="#991B1B"/>
+                      <TextBlock Text="items at or below reorder level" Foreground="#B91C1C"
+                                 FontSize="12" Margin="0,8,0,0"/>
+                    </StackPanel>
+                  </Border>
+                </Grid>
+
+                <!-- ======================== sales chart ========================
+                     Drawn by SalesChart against the live canvas size. The
+                     bar grid it replaces could not show a trend, only a
+                     silhouette, and had no way to tell you a day's figure.
+                -->
+                <Border Style="{StaticResource Card}" Cursor="Hand"
+                        MouseLeftButtonUp="SalesChart_Click"
+                        ToolTip="Double-click to open the full chart">
+                  <DockPanel>
+                    <DockPanel DockPanel.Dock="Top">
+                      <ComboBox DockPanel.Dock="Right" Width="150" VerticalAlignment="Top"
+                                ItemsSource="{Binding SalesPeriods}"
+                                SelectedItem="{Binding SalesPeriod}"/>
+                      <StackPanel>
+                        <TextBlock Text="TOTAL SALE" Style="{StaticResource CardCaption}"/>
+                        <TextBlock Style="{StaticResource CardFigure}"
+                                   Text="{Binding PeriodSales, StringFormat=Rs {0:N0}}"/>
+                        <TextBlock Style="{StaticResource Hint}"
+                                   Text="{Binding TodaySales, StringFormat=Today: Rs {0:N0}}"/>
+                      </StackPanel>
+                    </DockPanel>
+
+                    <v:SalesChart Points="{Binding SalesTrend}" Height="240" Margin="0,16,0,0"/>
+                  </DockPanel>
+                </Border>
+
+                <!-- ====================== report shortcuts ====================== -->
+                <Border Style="{StaticResource Card}">
+                  <StackPanel>
+                    <DockPanel Margin="0,0,0,12">
+                      <Button DockPanel.Dock="Right" Content="View All" Cursor="Hand"
+                              Background="Transparent" BorderThickness="0" Foreground="#2563EB"
+                              Command="{Binding NavigateCommand}" CommandParameter="reports"/>
+                      <TextBlock Text="Most Used Reports" Style="{StaticResource CardCaption}"/>
+                    </DockPanel>
+                    <UniformGrid Columns="4">
+                      <Button Style="{StaticResource ReportCard}" Content="Sale Report"
+                              Command="{Binding OpenReportCommand}" CommandParameter="sale"/>
+                      <Button Style="{StaticResource ReportCard}" Content="All Transactions"
+                              Command="{Binding OpenReportCommand}" CommandParameter="alltxn"/>
+                      <Button Style="{StaticResource ReportCard}" Content="Day Book"
+                              Command="{Binding OpenReportCommand}" CommandParameter="daybook"/>
+                      <Button Style="{StaticResource ReportCard}" Content="Party Statement"
+                              Command="{Binding OpenReportCommand}" CommandParameter="partystatement"/>
+                    </UniformGrid>
+                  </StackPanel>
+                </Border>
+
+              </StackPanel>
+            </ScrollViewer>
+          </TabItem>
+
+          <!-- 1 Parties -->
+          <TabItem><ContentControl Content="{Binding PartiesView}"/></TabItem>
+
+          <!-- 2 Items -->
+          <TabItem><ContentControl Content="{Binding ItemsView}"/></TabItem>
+
+          <!-- 3 Sale -->
+          <TabItem><ContentControl Content="{Binding SaleListView}"/></TabItem>
+
+          <!-- 4 Purchase -->
+          <TabItem><ContentControl Content="{Binding PurchaseListView}"/></TabItem>
+
+          <!-- 5 Reports -->
+          <TabItem><ContentControl Content="{Binding ReportsView}"/></TabItem>
+
+          <!-- 6 Stock summary -->
+          <TabItem>
+            <DataGrid ItemsSource="{Binding Stock}" Margin="8" IsReadOnly="True">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Item" Binding="{Binding ItemName}" Width="2*"/>
+                <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*"/>
+                <DataGridTextColumn Header="On hand" Binding="{Binding OnHand, StringFormat=N3}" Width="*"/>
+                <DataGridTextColumn Header="Unit" Binding="{Binding BaseUnit}" Width="70"/>
+                <DataGridTextColumn Header="Value" Binding="{Binding StockValue, StringFormat=N2}" Width="*"/>
+              </DataGrid.Columns>
+            </DataGrid>
+          </TabItem>
+
+          <!-- 7 Near expiry -->
+          <TabItem>
+            <DataGrid ItemsSource="{Binding NearExpiry}" Margin="8" IsReadOnly="True">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Item" Binding="{Binding ItemName}" Width="2*"/>
+                <DataGridTextColumn Header="Batch" Binding="{Binding BatchNo}" Width="*"/>
+                <DataGridTextColumn Header="Expiry" Binding="{Binding ExpiryDate, StringFormat=dd-MMM-yyyy}" Width="*"/>
+                <DataGridTextColumn Header="Days left" Binding="{Binding DaysLeft}" Width="90"/>
+                <DataGridTextColumn Header="On hand" Binding="{Binding OnHand, StringFormat=N3}" Width="*"/>
+                <DataGridTextColumn Header="Value at risk" Binding="{Binding StockValue, StringFormat=N2}" Width="*"/>
+              </DataGrid.Columns>
+            </DataGrid>
+          </TabItem>
+
+          <!-- 8 Opening stock -->
+          <TabItem><ContentControl Content="{Binding OpeningStockView}"/></TabItem>
+
+          <!-- 9 Settings -->
+          <TabItem><ContentControl Content="{Binding SettingsView}"/></TabItem>
+
+          <!-- 10 Payment-In -->
+          <TabItem><ContentControl Content="{Binding PaymentInView}"/></TabItem>
+
+
+          <!-- 11 Payment-Out -->
+          <TabItem><ContentControl Content="{Binding PaymentOutView}"/></TabItem>
+
+
+          <!-- 12 Expenses -->
+          <TabItem><ContentControl Content="{Binding ExpensesView}"/></TabItem>
+
+
+          <!-- 13 Banks -->
+          <TabItem><ContentControl Content="{Binding BanksView}"/></TabItem>
+
+        </TabControl>
+      </DockPanel>
+    </Grid>
+  </DockPanel>
+</Window>

@@ -1,0 +1,286 @@
+<!--
+  ===================================================================
+  REFERENCE SCREEN for the design system.
+
+  Every other list / master-detail screen should copy the patterns in
+  this file exactly: the watermarked search box, the labelled filter
+  combo, stat captions over figures, badge columns, em-dashed empty
+  cells, and a table that carries no styles of its own.
+
+  It declares NO styles. If something here needs a style that does not
+  exist, it goes in App.xaml, not at the top of this file.
+  ===================================================================
+-->
+<UserControl x:Class="ShopApp.UI.Views.PartiesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Grid Margin="10">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="340" MinWidth="260"/>
+      <ColumnDefinition Width="10"/>
+      <ColumnDefinition Width="*" MinWidth="420"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- ===================== LEFT: the party list ===================== -->
+    <Border Grid.Column="0" Style="{StaticResource GridCard}">
+      <DockPanel>
+
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+
+          <!-- Watermark pattern: the label sits over the box and disappears
+               the moment anything is typed. An unlabelled search box makes
+               the user guess what it searches. -->
+          <Grid Grid.Column="0">
+            <TextBox x:Name="SearchBox"
+                     Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged, Delay=250}"
+                     ToolTip="Search by name, phone, email or group"/>
+            <TextBlock Text="Search party name">
+              <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource Watermark}">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                      <Setter Property="Visibility" Value="Visible"/>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </TextBlock.Style>
+            </TextBlock>
+          </Grid>
+
+          <Button Grid.Column="1" Margin="8,0,0,0" Content="+  Add Party"
+                  Style="{StaticResource SaleButton}"
+                  Command="{Binding NewCommand}"/>
+        </Grid>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+          <ComboBox Width="140" ItemsSource="{Binding Groups}"
+                    SelectedItem="{Binding GroupFilter}"
+                    ToolTip="Filter by group">
+            <!-- An empty grey box says nothing. This says what it filters. -->
+            <ComboBox.Resources>
+              <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}"/>
+            </ComboBox.Resources>
+          </ComboBox>
+          <CheckBox Content="Inactive" Margin="10,0,0,0" IsChecked="{Binding ShowInactive}"/>
+          <Button Content="Clear" Margin="10,0,0,0" Style="{StaticResource ChipButton}"
+                  Command="{Binding ClearFiltersCommand}"/>
+        </StackPanel>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}"
+                   Style="{StaticResource StatusLine}"/>
+
+        <DataGrid ItemsSource="{Binding Parties}"
+                  SelectedItem="{Binding SelectedRow}"
+                  IsReadOnly="True" CanUserSortColumns="False"
+                  HorizontalScrollBarVisibility="Disabled">
+          <DataGrid.RowStyle>
+            <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                  <Setter Property="Foreground" Value="{StaticResource Faint}"/>
+                  <Setter Property="FontStyle" Value="Italic"/>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </DataGrid.RowStyle>
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="PARTY NAME" Binding="{Binding Name}" Width="*"/>
+            <DataGridTextColumn Header="AMOUNT" Width="120"
+                                Binding="{Binding Balance, StringFormat=N2}">
+              <DataGridTextColumn.ElementStyle>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource MoneyInCell}">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding BalanceDirection}" Value="To Pay">
+                      <Setter Property="Foreground" Value="{StaticResource Negative}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding OverLimit}" Value="True">
+                      <Setter Property="Foreground" Value="{StaticResource Warn}"/>
+                      <Setter Property="FontWeight" Value="Bold"/>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </DataGridTextColumn.ElementStyle>
+            </DataGridTextColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+    </Border>
+
+    <!-- ================== RIGHT: the party's statement ================== -->
+    <Grid Grid.Column="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="10"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+
+      <Border Grid.Row="0" Style="{StaticResource Card}"
+              Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+        <StackPanel>
+
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+              <Button Content="Remove" Style="{StaticResource DangerButton}" Margin="0,0,8,0"
+                      Command="{Binding DeleteCommand}"
+                      ToolTip="A party with history is deactivated, not deleted"/>
+              <Button Content="Edit" Style="{StaticResource PrimaryButton}"
+                      Command="{Binding EditCommand}"/>
+            </StackPanel>
+            <StackPanel>
+              <TextBlock Text="{Binding SelectedParty.Name}" Style="{StaticResource PageTitle}"
+                         TextTrimming="CharacterEllipsis"/>
+              <TextBlock Style="{StaticResource Hint}"
+                         Text="{Binding SelectedParty.GroupName, Converter={StaticResource Dash}}"/>
+            </StackPanel>
+          </DockPanel>
+
+          <!-- Four figures as tiles, not bare text. A caption above a number
+               is the pattern everywhere in this app. -->
+          <UniformGrid Columns="4" Margin="0,18,-10,0">
+            <Border Style="{StaticResource StatTile}">
+              <StackPanel>
+                <TextBlock Text="{Binding BalanceCaption}" Style="{StaticResource StatCaption}"/>
+                <TextBlock Text="{Binding SelectedBalance, StringFormat=Rs {0:N2}}">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource FigureSmall}">
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding BalanceCaption}" Value="TO RECEIVE">
+                          <Setter Property="Foreground" Value="{StaticResource Positive}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding BalanceCaption}" Value="TO PAY">
+                          <Setter Property="Foreground" Value="{StaticResource Negative}"/>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBlock.Style>
+                </TextBlock>
+              </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatTile}">
+              <StackPanel>
+                <TextBlock Text="PHONE" Style="{StaticResource StatCaption}"/>
+                <TextBlock Style="{StaticResource FigureSmall}"
+                           Text="{Binding SelectedParty.Phone, Converter={StaticResource Dash}}"/>
+              </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatTile}">
+              <StackPanel>
+                <TextBlock Text="CREDIT LIMIT" Style="{StaticResource StatCaption}"/>
+                <TextBlock Style="{StaticResource FigureSmall}"
+                           Text="{Binding SelectedParty.CreditLimit, Converter={StaticResource Dash}}"/>
+              </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatTile}">
+              <StackPanel>
+                <TextBlock Text="EMAIL" Style="{StaticResource StatCaption}"/>
+                <TextBlock Style="{StaticResource FigureSmall}" FontSize="13"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding SelectedParty.Email, Converter={StaticResource Dash}}"/>
+              </StackPanel>
+            </Border>
+          </UniformGrid>
+
+          <TextBlock Style="{StaticResource Hint}" Margin="0,14,0,0"
+                     Text="{Binding SelectedParty.Address, Converter={StaticResource Dash}}"/>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Row="2" Style="{StaticResource GridCard}"
+              Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="TRANSACTIONS"
+                     Style="{StaticResource Micro}" Margin="2,0,0,12"/>
+
+          <!--
+            Sorting is off on purpose. The ledger is ordered oldest first so
+            the balance column reads as a running total; one click on a header
+            reverses it and every balance then looks wrong.
+          -->
+          <DataGrid ItemsSource="{Binding Ledger}" IsReadOnly="True"
+                    CanUserSortColumns="False"
+                    RowStyle="{StaticResource VoidedRow}">
+            <DataGrid.Columns>
+
+              <!-- Badge column: read the shape before the word. -->
+              <DataGridTemplateColumn Header="TYPE" Width="1.6*">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <Border>
+                      <Border.Style>
+                        <Style TargetType="Border" BasedOn="{StaticResource Badge}">
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding Type}" Value="Sale">
+                              <Setter Property="Background" Value="{StaticResource NegativeWash}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Type}" Value="Purchase">
+                              <Setter Property="Background" Value="{StaticResource AccentTint}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Type}" Value="Opening Balance">
+                              <Setter Property="Background" Value="{StaticResource WarnWash}"/>
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </Border.Style>
+                      <TextBlock Text="{Binding Type}" Style="{StaticResource BadgeText}"/>
+                    </Border>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+
+              <DataGridTextColumn Header="NUMBER" Width="*"
+                                  Binding="{Binding Number, Converter={StaticResource Dash}}"/>
+              <DataGridTextColumn Header="DATE" Width="120"
+                                  Binding="{Binding Date, StringFormat=dd-MMM-yyyy}"/>
+              <DataGridTextColumn Header="TOTAL" Width="130"
+                                  Binding="{Binding Total, StringFormat=N2}"
+                                  ElementStyle="{StaticResource NumberCell}"/>
+              <DataGridTextColumn Header="BALANCE" Width="130"
+                                  Binding="{Binding Balance, StringFormat=N2}">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock" BasedOn="{StaticResource MoneyOutCell}">
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsReceivable}" Value="True">
+                        <Setter Property="Foreground" Value="{StaticResource Positive}"/>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+              <DataGridTextColumn Header="STATUS" Width="100"
+                                  Binding="{Binding Status, Converter={StaticResource Dash}}"/>
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </Border>
+
+      <!-- Nothing picked yet. -->
+      <Border Grid.Row="0" Grid.RowSpan="3">
+        <Border.Style>
+          <Style TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding HasSelection}" Value="False">
+                <Setter Property="Visibility" Value="Visible"/>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Border.Style>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+          <TextBlock Text="Pick a party on the left" Style="{StaticResource SectionHead}"
+                     Foreground="{StaticResource Faint}" HorizontalAlignment="Center"/>
+          <TextBlock Text="Their full statement appears here."
+                     Style="{StaticResource Hint}" HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

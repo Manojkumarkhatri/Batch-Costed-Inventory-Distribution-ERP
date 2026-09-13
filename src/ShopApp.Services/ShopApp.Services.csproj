@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.11" />
+    <!-- DPAPI on .NET 8 needs this explicitly -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
+  </ItemGroup>
+    <ItemGroup>
+    <ProjectReference Include="../ShopApp.Domain/ShopApp.Domain.csproj" />
+    <ProjectReference Include="../ShopApp.Data/ShopApp.Data.csproj" />
+    <ProjectReference Include="../ShopApp.Reports/ShopApp.Reports.csproj" />
+  </ItemGroup>
+</Project>

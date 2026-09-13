@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run ShopApp",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/ShopApp.UI/bin/Debug/net8.0-windows/ShopApp.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/ShopApp.UI",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    }
+  ]
+}

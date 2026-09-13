@@ -1,0 +1,88 @@
+<Window x:Class="ShopApp.UI.Views.BankDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add Bank Account" Height="620" Width="640"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="White" ShowInTaskbar="False">
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Style="{StaticResource DialogHeader}">
+      <TextBlock x:Name="HeaderText" FontSize="17" FontWeight="Bold"
+                 Foreground="{StaticResource Ink}"/>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Style="{StaticResource DialogFooter}">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Content="Cancel" MinWidth="90" Click="Cancel_Click" IsCancel="True"/>
+        <Button Content="Save details" MinWidth="130" Margin="10,0,0,0"
+                Style="{StaticResource SaleButton}" Click="Save_Click" IsDefault="True"/>
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="20,4,20,20">
+
+        <TextBlock Text="Account display name *" Style="{StaticResource Label}"/>
+        <TextBox x:Name="NameBox"/>
+        <TextBlock Style="{StaticResource Hint}"
+                   Text="What he calls it day to day - Bank al Habib, HBL current."/>
+
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/><ColumnDefinition Width="12"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="0">
+            <TextBlock Text="Opening balance" Style="{StaticResource Label}"/>
+            <TextBox x:Name="OpeningBox"/>
+          </StackPanel>
+          <StackPanel Grid.Column="2">
+            <TextBlock Text="As of date" Style="{StaticResource Label}"/>
+            <DatePicker x:Name="OpeningDateBox"/>
+          </StackPanel>
+        </Grid>
+        <TextBlock Style="{StaticResource Hint}"
+                   Text="What was in the account on the day he started using this app. Leave at zero for a new account."/>
+
+        <TextBlock Text="Details printed on invoices" Style="{StaticResource SectionHead}"
+                   Margin="0,22,0,0"/>
+        <TextBlock Style="{StaticResource Hint}"
+                   Text="Only needed if he wants customers to transfer money directly."/>
+
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/><ColumnDefinition Width="12"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="0">
+            <TextBlock Text="Bank name" Style="{StaticResource Label}"/>
+            <TextBox x:Name="BankNameBox"/>
+          </StackPanel>
+          <StackPanel Grid.Column="2">
+            <TextBlock Text="Account number" Style="{StaticResource Label}"/>
+            <TextBox x:Name="AccountNumberBox"/>
+          </StackPanel>
+        </Grid>
+
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/><ColumnDefinition Width="12"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="0">
+            <TextBlock Text="Branch or IBAN" Style="{StaticResource Label}"/>
+            <TextBox x:Name="BranchBox"/>
+          </StackPanel>
+          <StackPanel Grid.Column="2">
+            <TextBlock Text="Account holder" Style="{StaticResource Label}"/>
+            <TextBox x:Name="HolderBox"/>
+          </StackPanel>
+        </Grid>
+
+        <CheckBox x:Name="PrintBox" Content="Print these details on invoices" Margin="0,18,0,0"/>
+        <CheckBox x:Name="ActiveBox" Content="Active" Margin="0,10,0,0"/>
+
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>
