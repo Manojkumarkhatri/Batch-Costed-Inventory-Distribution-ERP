@@ -25,6 +25,82 @@ public partial class App : Application
         Directory.CreateDirectory(folder);
         DbPath = Path.Combine(folder, "shop.db");
 
+        // Logging and the exception handlers go up before anything that could
+        // fail. A crash during startup is exactly the one worth seeing, and
+        // until this point there is nowhere to record it.
+        AppLog.Start(Path.Combine(folder, "logs"));
+        AppLog.Info($"---- started, version {GetType().Assembly.GetName().Version} ----");
+        HookExceptionHandlers();
+
+        try
+        {
+            Compose();
+        }
+        catch (Exception ex)
+        {
+            // Nothing is running yet, so there is nothing to continue into.
+            AppLog.Error("Startup failed", ex);
+            new CrashDialog(ex, fatal: true).ShowDialog();
+            Shutdown(1);
+        }
+    }
+
+    /// <summary>
+    /// Three separate routes an exception can take out of a WPF application,
+    /// and all three end with a silently closed window if nobody is listening.
+    /// </summary>
+    private void HookExceptionHandlers()
+    {
+        // Anything thrown on the UI thread: a click handler, a binding, a
+        // command. Recoverable - the rest of the app is still fine.
+        DispatcherUnhandledException += (_, args) =>
+        {
+            AppLog.Error("Unhandled exception on the UI thread", args.Exception);
+            args.Handled = true;
+            ShowCrash(args.Exception, fatal: false);
+        };
+
+        // A background thread. The process is going down whatever we do; the
+        // most that can be done is record it and say so.
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            if (args.ExceptionObject is Exception ex)
+            {
+                AppLog.Error("Unhandled exception on a background thread", ex);
+                ShowCrash(ex, fatal: true);
+            }
+        };
+
+        // A Task nobody awaited. Logged but not shown: by the time the
+        // finaliser notices, the user has moved on and a dialog would arrive
+        // with no context.
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            AppLog.Error("Unobserved task exception", args.Exception);
+            args.SetObserved();
+        };
+    }
+
+    private void ShowCrash(Exception ex, bool fatal)
+    {
+        try
+        {
+            Dispatcher.Invoke(() => new CrashDialog(ex, fatal)
+            {
+                Owner = Current?.MainWindow?.IsLoaded == true ? Current.MainWindow : null
+            }.ShowDialog());
+        }
+        catch
+        {
+            // If even the dialog fails, the log still has the original.
+        }
+
+        if (fatal) Shutdown(1);
+    }
+
+    private void Compose()
+    {
+
         var sc = new ServiceCollection();
 
         sc.AddDbContext<AppDbContext>(o => o.UseSqlite($"Data Source={DbPath}"),
@@ -85,6 +161,8 @@ public partial class App : Application
 
         var window = Services.GetRequiredService<MainWindow>();
         window.Show();
+
+        AppLog.Info("Main window shown");
     }
 
     /// <summary>
@@ -110,9 +188,11 @@ public partial class App : Application
                 {
                     settings.LastBackupAt = DateTime.Now;
                     db.SaveChanges();
+                    AppLog.Info($"Backup written to {result.FilePath}");
                 }
                 else
                 {
+                    AppLog.Error($"Backup failed: {result.Error}");
                     // Loud, not silent. An unplugged USB must not pass unnoticed.
                     MessageBox.Show(
                         $"BACKUP FAILED\n\n{result.Error}\n\n" +
@@ -124,10 +204,12 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            AppLog.Error("Backup threw on close", ex);
             MessageBox.Show($"Backup error on close:\n{ex.Message}",
                 "Backup", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
+        AppLog.Info("---- closed ----");
         base.OnExit(e);
     }
 }
