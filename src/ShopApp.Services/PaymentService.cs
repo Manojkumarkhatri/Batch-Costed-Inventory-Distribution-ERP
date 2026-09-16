@@ -9,7 +9,7 @@ namespace ShopApp.Services;
 /// <summary>One recorded payment, as shown on the Payment-In list.</summary>
 public record PaymentListRow(int Id, DateTime Date, int PartyId, string PartyName,
                              PaymentMode Mode, decimal Amount, string? ReferenceNo,
-                             decimal Allocated, string? Notes)
+                             decimal Allocated, string? Notes, string? VoucherNo)
 {
     /// <summary>Money received that is not yet tied to a specific invoice.</summary>
     public decimal OnAccount => Money.Round(Amount - Allocated);
@@ -62,7 +62,7 @@ public class PaymentService
             .Select(p => new
             {
                 p.Id, p.Date, p.PartyId, Party = p.Party!.Name,
-                p.Mode, p.Amount, p.ReferenceNo, p.Notes
+                p.Mode, p.Amount, p.ReferenceNo, p.Notes, p.VoucherNo
             })
             .ToList();
 
@@ -82,7 +82,8 @@ public class PaymentService
             .OrderByDescending(p => p.Date).ThenByDescending(p => p.Id)
             .Select(p => new PaymentListRow(
                 p.Id, p.Date, p.PartyId, p.Party, p.Mode, Money.Round(p.Amount),
-                p.ReferenceNo, Money.Round(allocated.GetValueOrDefault(p.Id)), p.Notes))
+                p.ReferenceNo, Money.Round(allocated.GetValueOrDefault(p.Id)),
+                p.Notes, p.VoucherNo))
             .ToList();
     }
 
@@ -155,8 +156,24 @@ public class PaymentService
 
         using var tx = _db.Database.BeginTransaction();
 
+        // His own number for the voucher, taken under the same transaction as
+        // the payment. Two vouchers with the same number would be impossible
+        // to tell apart on the phone.
+        var settings = _db.Settings.Single(x => x.Id == 1);
+        var incoming = input.Direction == PaymentDirection.In;
+
+        var prefix = incoming ? settings.PaymentInPrefix : settings.PaymentOutPrefix;
+        var next = incoming ? settings.PaymentInNextNumber : settings.PaymentOutNextNumber;
+        var pad = Math.Clamp(settings.PaymentNumberPadding, 1, 8);
+
+        var voucherNo = $"{prefix}{next.ToString().PadLeft(pad, '0')}";
+
+        if (incoming) settings.PaymentInNextNumber = next + 1;
+        else settings.PaymentOutNextNumber = next + 1;
+
         var payment = new Payment
         {
+            VoucherNo = voucherNo,
             PartyId = input.PartyId,
             Direction = input.Direction,
             Mode = input.Mode,

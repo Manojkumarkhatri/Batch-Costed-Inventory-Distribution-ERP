@@ -19,6 +19,15 @@ public partial class PurchaseListView : UserControl
 
         vm.ShowPurchaseForm = ShowPurchaseForm;
 
+        vm.AskPrintOptions = hasDescription =>
+        {
+            var dialog = new PrintOptionsDialog("Print purchase bill", hasDescription)
+            {
+                Owner = Window.GetWindow(this)
+            };
+            return dialog.ShowDialog() == true ? dialog.WithDescription : null;
+        };
+
         IsVisibleChanged += (_, e) =>
         {
             if (e.NewValue is true) vm.Load();

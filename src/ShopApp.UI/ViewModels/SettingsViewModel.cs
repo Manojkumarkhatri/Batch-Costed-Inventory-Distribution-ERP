@@ -44,6 +44,12 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private int invoiceNumberPadding = 1;
     [ObservableProperty] private bool invoiceResetYearly;
 
+    [ObservableProperty] private string paymentInPrefix = "RV-";
+    [ObservableProperty] private int paymentInNextNumber = 1;
+    [ObservableProperty] private string paymentOutPrefix = "PV-";
+    [ObservableProperty] private int paymentOutNextNumber = 1;
+    [ObservableProperty] private int paymentNumberPadding = 3;
+
     // -------------------------------------------------------------- backup
 
     [ObservableProperty] private string? backupFolder;
@@ -95,6 +101,12 @@ public partial class SettingsViewModel : ObservableObject
         InvoiceNextNumber = _settings.InvoiceNextNumber;
         InvoiceNumberPadding = _settings.InvoiceNumberPadding;
         InvoiceResetYearly = _settings.InvoiceResetYearly;
+
+        PaymentInPrefix = _settings.PaymentInPrefix;
+        PaymentInNextNumber = _settings.PaymentInNextNumber;
+        PaymentOutPrefix = _settings.PaymentOutPrefix;
+        PaymentOutNextNumber = _settings.PaymentOutNextNumber;
+        PaymentNumberPadding = _settings.PaymentNumberPadding;
 
         BackupFolder = _settings.BackupFolder;
         BackupKeepCount = _settings.BackupKeepCount;
@@ -161,6 +173,13 @@ public partial class SettingsViewModel : ObservableObject
         _settings.InvoiceNextNumber = InvoiceNextNumber;
         _settings.InvoiceNumberPadding = Math.Clamp(InvoiceNumberPadding, 1, 8);
         _settings.InvoiceResetYearly = InvoiceResetYearly;
+
+        _settings.PaymentInPrefix = PaymentInPrefix?.Trim() ?? "RV-";
+        _settings.PaymentInNextNumber = Math.Max(1, PaymentInNextNumber);
+        _settings.PaymentOutPrefix = PaymentOutPrefix?.Trim() ?? "PV-";
+        _settings.PaymentOutNextNumber = Math.Max(1, PaymentOutNextNumber);
+        _settings.PaymentNumberPadding = Math.Clamp(PaymentNumberPadding, 1, 8);
+
         _db.SaveChanges();
 
         InvoiceNumberPadding = _settings.InvoiceNumberPadding;
@@ -168,6 +187,24 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>Live preview of the number the next bill will carry.</summary>
+    /// <summary>Live preview of the next receipt and payment numbers.</summary>
+    public string ReceiptPreview => Voucher(PaymentInPrefix, PaymentInNextNumber);
+    public string VoucherPreview => Voucher(PaymentOutPrefix, PaymentOutNextNumber);
+
+    private string Voucher(string? prefix, int next) =>
+        $"{prefix}{next.ToString().PadLeft(Math.Clamp(PaymentNumberPadding, 1, 8), '0')}";
+
+    partial void OnPaymentInPrefixChanged(string value) => OnPropertyChanged(nameof(ReceiptPreview));
+    partial void OnPaymentInNextNumberChanged(int value) => OnPropertyChanged(nameof(ReceiptPreview));
+    partial void OnPaymentOutPrefixChanged(string value) => OnPropertyChanged(nameof(VoucherPreview));
+    partial void OnPaymentOutNextNumberChanged(int value) => OnPropertyChanged(nameof(VoucherPreview));
+
+    partial void OnPaymentNumberPaddingChanged(int value)
+    {
+        OnPropertyChanged(nameof(ReceiptPreview));
+        OnPropertyChanged(nameof(VoucherPreview));
+    }
+
     public string Preview =>
         $"{InvoicePrefix}{InvoiceNextNumber.ToString().PadLeft(Math.Clamp(InvoiceNumberPadding, 1, 8), '0')}";
 

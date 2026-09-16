@@ -63,10 +63,14 @@
       <DockPanel>
         <TextBlock DockPanel.Dock="Left" Text="{Binding StatusMessage}"
                    Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
-        <Button HorizontalAlignment="Right" Content="Delete payment" Padding="14,6"
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Content="Print receipt" Margin="0,0,8,0"
+                Command="{Binding PrintCommand}" IsEnabled="{Binding HasSelection}"/>
+        <Button Content="Delete payment" Padding="14,6"
                 Foreground="#B91C1C" Command="{Binding DeletePaymentCommand}"
                 IsEnabled="{Binding HasSelection}"
                 ToolTip="The invoices it settled go back to unpaid"/>
+        </StackPanel>
       </DockPanel>
     </Border>
 
@@ -75,6 +79,9 @@
       <DataGrid x:Name="Rows" ItemsSource="{Binding Payments}" SelectedItem="{Binding SelectedPayment}"
                 IsReadOnly="True" HeadersVisibility="Column" BorderThickness="0">
         <DataGrid.Columns>
+          <DataGridTextColumn Header="VOUCHER NO" Width="120"
+                              ElementStyle="{StaticResource TextCell}"
+                              Binding="{Binding VoucherNo, Converter={StaticResource Dash}}"/>
           <DataGridTextColumn Header="DATE" Width="110"
                               Binding="{Binding Date, StringFormat=dd-MMM-yyyy}"/>
           <DataGridTextColumn Header="PARTY NAME" Binding="{Binding PartyName}" Width="2*"/>

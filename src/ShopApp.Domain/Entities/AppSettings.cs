@@ -41,4 +41,13 @@ public class AppSettings
     /// has to be told to it - there is no transaction that created it.
     /// </summary>
     public decimal OpeningCashInHand { get; set; }
+
+    // Payment vouchers carry their own series, separate from invoices and
+    // from each other. A receipt numbered the same as a payment made would
+    // be impossible to discuss on the phone.
+    public string PaymentInPrefix { get; set; } = "RV-";
+    public int PaymentInNextNumber { get; set; } = 1;
+    public string PaymentOutPrefix { get; set; } = "PV-";
+    public int PaymentOutNextNumber { get; set; } = 1;
+    public int PaymentNumberPadding { get; set; } = 3;
 }

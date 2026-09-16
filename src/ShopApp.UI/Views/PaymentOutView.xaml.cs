@@ -18,6 +18,15 @@ public partial class PaymentOutView : UserControl
 
         vm.ShowPaymentForm = ShowPaymentForm;
 
+        vm.AskPrintOptions = hasDescription =>
+        {
+            var dialog = new PrintOptionsDialog("Print payment voucher", hasDescription)
+            {
+                Owner = Window.GetWindow(this)
+            };
+            return dialog.ShowDialog() == true ? dialog.WithDescription : null;
+        };
+
         IsVisibleChanged += (_, e) =>
         {
             if (e.NewValue is true) vm.Load();

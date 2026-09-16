@@ -71,7 +71,7 @@
           <TextBlock Text="{Binding TotalInWords}" TextWrapping="Wrap"
                      FontStyle="Italic" Foreground="#374151"/>
 
-          <TextBlock Text="Notes" Style="{StaticResource FieldLabel}"/>
+          <TextBlock Text="Description" Style="{StaticResource FieldLabel}"/>
           <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" Height="42"/>
         </StackPanel>
 
@@ -158,6 +158,7 @@
       </StackPanel>
 
       <DataGrid ItemsSource="{Binding Lines}" AutoGenerateColumns="False"
+                Style="{StaticResource EntryGrid}"
                 CanUserAddRows="False" SelectionMode="Single"
                 HeadersVisibility="Column" RowHeight="30">
         <DataGrid.RowStyle>

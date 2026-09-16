@@ -113,6 +113,7 @@ public partial class App : Application
         sc.AddTransient<PartyService>();
         sc.AddTransient<PurchaseService>();
         sc.AddTransient<InvoiceBuilder>();
+        sc.AddTransient<DocumentBuilder>();
         sc.AddTransient<OpeningStockService>();
         sc.AddTransient<ReportService>();
         sc.AddTransient<PaymentService>();

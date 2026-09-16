@@ -67,6 +67,8 @@
         <TextBlock DockPanel.Dock="Left" Text="{Binding StatusMessage}"
                    Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+          <Button Content="Print bill" Margin="0,0,8,0"
+                  Command="{Binding PrintCommand}" IsEnabled="{Binding HasSelection}"/>
           <Button Content="Correct this bill" Margin="0,0,8,0"
                   Command="{Binding CorrectCommand}" IsEnabled="{Binding HasSelection}"
                   ToolTip="Cancels the bill and opens a blank form to enter it again"/>

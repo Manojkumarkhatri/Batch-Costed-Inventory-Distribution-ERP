@@ -1,0 +1,48 @@
+<!--
+  Asked before printing anything that carries a description.
+
+  The description is often a private note - "short delivery, argued about it" -
+  which belongs in his file but not on a copy handed to the other party. So the
+  choice is made per print, not per document.
+-->
+<Window x:Class="ShopApp.UI.Views.PrintOptionsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Print" Height="290" Width="470"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="{StaticResource Surface}" ShowInTaskbar="False">
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Style="{StaticResource DialogHeader}">
+      <TextBlock x:Name="HeaderText" FontSize="16" FontWeight="Bold"
+                 Foreground="{StaticResource Ink}"/>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Style="{StaticResource DialogFooter}">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Content="Cancel" MinWidth="90" IsCancel="True" Click="Cancel_Click"/>
+        <Button Content="Print" MinWidth="120" Margin="10,0,0,0"
+                Style="{StaticResource PrimaryButton}" Click="Print_Click" IsDefault="True"/>
+      </StackPanel>
+    </Border>
+
+    <StackPanel Margin="20,16,20,16">
+      <RadioButton x:Name="WithBox" GroupName="Desc" IsChecked="True"
+                   Content="Print with the description"/>
+      <TextBlock Style="{StaticResource Hint}" Margin="22,2,0,0"
+                 Text="Your own copy, for the file."/>
+
+      <RadioButton x:Name="WithoutBox" GroupName="Desc" Margin="0,14,0,0"
+                   Content="Print without the description"/>
+      <TextBlock Style="{StaticResource Hint}" Margin="22,2,0,0"
+                 Text="For the other party. Everything else is identical."/>
+
+      <Border x:Name="NoDescNote" Background="{StaticResource Wash}"
+              BorderBrush="{StaticResource Line}" BorderThickness="1"
+              CornerRadius="6" Padding="10" Margin="0,16,0,0" Visibility="Collapsed">
+        <TextBlock Style="{StaticResource Hint}" Margin="0"
+                   Text="This one has no description on it, so both choices print the same thing."/>
+      </Border>
+    </StackPanel>
+  </DockPanel>
+</Window>

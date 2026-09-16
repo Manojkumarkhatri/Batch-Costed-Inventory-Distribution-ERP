@@ -59,7 +59,7 @@
       <TextBlock Text="Quantity" Style="{StaticResource FieldLabel}"/>
       <TextBox x:Name="QtyBox" Padding="6,5"/>
 
-      <TextBlock Text="Note (optional)" Style="{StaticResource FieldLabel}"/>
+      <TextBlock Text="Description (optional)" Style="{StaticResource FieldLabel}"/>
       <TextBox x:Name="NoteBox" Padding="6,5" Height="56" AcceptsReturn="True"
                TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
 

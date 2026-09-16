@@ -220,6 +220,64 @@
             <CheckBox Content="Start again from 1 each financial year (July)" Margin="0,16,0,0"
                       IsChecked="{Binding InvoiceResetYearly}"/>
 
+            <Separator Margin="0,20,0,4"/>
+            <TextBlock Text="Payment vouchers" Style="{StaticResource SectionHead}"/>
+            <TextBlock Style="{StaticResource Hint}"
+                       Text="Receipts and payments made carry their own numbering. Two series, because a receipt numbered the same as a payment would be impossible to discuss on the phone."/>
+
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel Grid.Column="0">
+                <TextBlock Text="Receipt prefix" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding PaymentInPrefix, UpdateSourceTrigger=PropertyChanged}"/>
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="Next receipt no" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding PaymentInNextNumber, UpdateSourceTrigger=PropertyChanged}"/>
+              </StackPanel>
+              <StackPanel Grid.Column="4">
+                <TextBlock Text="Pad to digits" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding PaymentNumberPadding, UpdateSourceTrigger=PropertyChanged}"/>
+              </StackPanel>
+            </Grid>
+
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel Grid.Column="0">
+                <TextBlock Text="Payment prefix" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding PaymentOutPrefix, UpdateSourceTrigger=PropertyChanged}"/>
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="Next payment no" Style="{StaticResource FieldLabel}"/>
+                <TextBox Text="{Binding PaymentOutNextNumber, UpdateSourceTrigger=PropertyChanged}"/>
+              </StackPanel>
+            </Grid>
+
+            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+              <Border Background="{StaticResource Wash}" BorderBrush="{StaticResource Line}"
+                      BorderThickness="1" CornerRadius="6" Padding="14" Margin="0,0,10,0">
+                <StackPanel>
+                  <TextBlock Text="NEXT RECEIPT" Style="{StaticResource Micro}"/>
+                  <TextBlock Text="{Binding ReceiptPreview}" Style="{StaticResource FigureSmall}"/>
+                </StackPanel>
+              </Border>
+              <Border Background="{StaticResource Wash}" BorderBrush="{StaticResource Line}"
+                      BorderThickness="1" CornerRadius="6" Padding="14">
+                <StackPanel>
+                  <TextBlock Text="NEXT PAYMENT" Style="{StaticResource Micro}"/>
+                  <TextBlock Text="{Binding VoucherPreview}" Style="{StaticResource FigureSmall}"/>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+
             <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
                     CornerRadius="6" Padding="14" Margin="0,14,0,0" HorizontalAlignment="Left">
               <StackPanel>

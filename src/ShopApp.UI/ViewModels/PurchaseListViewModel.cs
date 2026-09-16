@@ -2,7 +2,10 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Diagnostics;
+using System.IO;
 using ShopApp.Domain.Logic;
+using ShopApp.Reports;
 using ShopApp.Services;
 
 namespace ShopApp.UI.ViewModels;
@@ -14,6 +17,7 @@ namespace ShopApp.UI.ViewModels;
 public partial class PurchaseListViewModel : ObservableObject
 {
     private readonly PurchaseService _purchases;
+    private readonly DocumentBuilder _documents;
 
     [ObservableProperty] private string period = "This Month";
     [ObservableProperty] private DateTime fromDate = new(DateTime.Today.Year, DateTime.Today.Month, 1);
@@ -34,9 +38,16 @@ public partial class PurchaseListViewModel : ObservableObject
     /// <summary>Set by the view. Opens the entry form; returns once it closes.</summary>
     public Action? ShowPurchaseForm { get; set; }
 
-    public PurchaseListViewModel(PurchaseService purchases)
+    /// <summary>
+    /// Set by the view. Asks whether the description goes on the printout,
+    /// and returns null if he changed his mind.
+    /// </summary>
+    public Func<bool, bool?>? AskPrintOptions { get; set; }
+
+    public PurchaseListViewModel(PurchaseService purchases, DocumentBuilder documents)
     {
         _purchases = purchases;
+        _documents = documents;
         ApplyPeriod();
     }
 
@@ -119,6 +130,45 @@ public partial class PurchaseListViewModel : ObservableObject
     {
         ShowPurchaseForm?.Invoke();
         Load();
+    }
+
+    [RelayCommand]
+    private void Print()
+    {
+        if (SelectedPurchase is not { } bill) return;
+
+        var data = _documents.BuildPurchaseBill(bill.Id);
+        if (data is null)
+        {
+            StatusMessage = "That bill could not be rebuilt for printing.";
+            return;
+        }
+
+        var withDescription = AskPrintOptions?.Invoke(!string.IsNullOrWhiteSpace(data.Description));
+        if (withDescription is null) return;
+
+        try
+        {
+            var folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "ShopApp Purchase Bills");
+            Directory.CreateDirectory(folder);
+
+            var safe = string.Join("_", data.BillNo.Split(Path.GetInvalidFileNameChars()));
+            var path = Path.Combine(folder, $"Bill-{safe}.pdf");
+
+            DocumentPrinter.SavePurchaseBill(data, withDescription.Value, path);
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+
+            AppLog.Info($"Purchase bill {data.BillNo} printed to {path}");
+            StatusMessage = $"Bill {data.BillNo} written to {path}";
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error($"Printing purchase bill {bill.Id} failed", ex);
+            MessageBox.Show($"Printing failed:\n{ex.Message}", "Print",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     [RelayCommand]

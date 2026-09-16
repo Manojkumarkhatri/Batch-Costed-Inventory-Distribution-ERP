@@ -3,7 +3,10 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ShopApp.Domain.Enums;
+using System.Diagnostics;
+using System.IO;
 using ShopApp.Domain.Logic;
+using ShopApp.Reports;
 using ShopApp.Services;
 
 namespace ShopApp.UI.ViewModels;
@@ -20,6 +23,7 @@ public partial class PaymentOutViewModel : ObservableObject
 {
     private readonly PaymentService _payments;
     private readonly PartyService _parties;
+    private readonly DocumentBuilder _documents;
 
     [ObservableProperty] private string period = "This Month";
     [ObservableProperty] private DateTime fromDate = new(DateTime.Today.Year, DateTime.Today.Month, 1);
@@ -42,10 +46,17 @@ public partial class PaymentOutViewModel : ObservableObject
     /// </summary>
     public Func<IReadOnlyList<PartyRow>, PaymentInput?>? ShowPaymentForm { get; set; }
 
-    public PaymentOutViewModel(PaymentService payments, PartyService parties)
+    /// <summary>
+    /// Set by the view. Asks whether the description goes on the voucher,
+    /// and returns null if he changed his mind.
+    /// </summary>
+    public Func<bool, bool?>? AskPrintOptions { get; set; }
+
+    public PaymentOutViewModel(PaymentService payments, PartyService parties, DocumentBuilder documents)
     {
         _payments = payments;
         _parties = parties;
+        _documents = documents;
         ApplyPeriod();
     }
 
@@ -146,6 +157,45 @@ public partial class PaymentOutViewModel : ObservableObject
         }
 
         Load();
+    }
+
+    [RelayCommand]
+    private void Print()
+    {
+        if (SelectedPayment is not { } row) return;
+
+        var data = _documents.BuildPaymentVoucher(row.Id);
+        if (data is null)
+        {
+            StatusMessage = "That voucher could not be rebuilt for printing.";
+            return;
+        }
+
+        var withDescription = AskPrintOptions?.Invoke(!string.IsNullOrWhiteSpace(data.Description));
+        if (withDescription is null) return;
+
+        try
+        {
+            var folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "ShopApp Payment Vouchers");
+            Directory.CreateDirectory(folder);
+
+            var safe = string.Join("_", data.VoucherNo.Split(Path.GetInvalidFileNameChars()));
+            var path = Path.Combine(folder, $"{safe}.pdf");
+
+            DocumentPrinter.SavePaymentVoucher(data, withDescription.Value, path);
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+
+            AppLog.Info($"Payment voucher {data.VoucherNo} printed to {path}");
+            StatusMessage = $"Payment voucher {data.VoucherNo} written to {path}";
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error($"Printing voucher {row.Id} failed", ex);
+            MessageBox.Show($"Printing failed:\n{ex.Message}", "Print",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     [RelayCommand]

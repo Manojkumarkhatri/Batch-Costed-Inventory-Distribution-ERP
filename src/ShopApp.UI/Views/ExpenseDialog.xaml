@@ -97,7 +97,7 @@
           </StackPanel>
         </Border>
 
-        <TextBlock Text="Notes (optional)" Style="{StaticResource FieldLabel}"/>
+        <TextBlock Text="Description (optional)" Style="{StaticResource FieldLabel}"/>
         <TextBox x:Name="NotesBox" Height="80" AcceptsReturn="True" TextWrapping="Wrap"
                  VerticalScrollBarVisibility="Auto"/>
         <TextBlock Foreground="#94A3B8" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,0"

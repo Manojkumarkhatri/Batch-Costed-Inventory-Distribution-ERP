@@ -26,10 +26,11 @@
     </Border>
 
     <Border DockPanel.Dock="Bottom" Style="{StaticResource DialogFooter}">
-      <DockPanel>
-        <TextBlock DockPanel.Dock="Left" x:Name="LogPathText"
-                   Style="{StaticResource Hint}" VerticalAlignment="Center"
-                   TextTrimming="CharacterEllipsis" MaxWidth="300"/>
+      <!-- The path goes on its own line. Docked beside the buttons it ran
+           underneath them as soon as the user profile name was long. -->
+      <StackPanel>
+        <TextBlock x:Name="LogPathText" Style="{StaticResource Hint}"
+                   Margin="0,0,0,10" TextTrimming="CharacterEllipsis"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
           <Button Content="Copy details" Margin="0,0,8,0" Click="Copy_Click"/>
           <Button Content="Open log folder" Margin="0,0,8,0" Click="OpenFolder_Click"/>
@@ -37,13 +38,13 @@
                   Style="{StaticResource PrimaryButton}" Click="Continue_Click"
                   IsDefault="True"/>
         </StackPanel>
-      </DockPanel>
+      </StackPanel>
     </Border>
 
     <StackPanel Margin="20,16,20,12">
       <TextBlock x:Name="Summary" TextWrapping="Wrap" FontSize="13"/>
 
-      <Expander Header="Technical detail" Margin="0,14,0,0" Foreground="{StaticResource Muted}">
+      <Expander Header="Technical detail" IsExpanded="True" Margin="0,14,0,0" Foreground="{StaticResource Muted}">
         <Border Background="{StaticResource Wash}" BorderBrush="{StaticResource Line}"
                 BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,8,0,0">
           <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">

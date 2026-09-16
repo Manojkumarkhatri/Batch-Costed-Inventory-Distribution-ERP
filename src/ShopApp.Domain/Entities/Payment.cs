@@ -14,7 +14,14 @@ public class Payment
     public decimal Amount { get; set; }
     public DateTime Date { get; set; } = DateTime.Today;
 
-    public string? ReferenceNo { get; set; }   // cheque number, transfer id
+    public string? ReferenceNo { get; set; }
+
+    /// <summary>
+    /// Our own number for the voucher, e.g. "PV-004". Separate from
+    /// ReferenceNo, which is the bank's or the cheque's - his number and
+    /// theirs are different things and both get printed.
+    /// </summary>
+    public string? VoucherNo { get; set; }   // cheque number, transfer id
     public DateTime? ChequeDueDate { get; set; }
     public string? Notes { get; set; }
 
