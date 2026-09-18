@@ -69,9 +69,9 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
           <Button Content="Print bill" Margin="0,0,8,0"
                   Command="{Binding PrintCommand}" IsEnabled="{Binding HasSelection}"/>
-          <Button Content="Correct this bill" Margin="0,0,8,0"
+          <Button Content="Edit bill" Margin="0,0,8,0"
                   Command="{Binding CorrectCommand}" IsEnabled="{Binding HasSelection}"
-                  ToolTip="Cancels the bill and opens a blank form to enter it again"/>
+                  ToolTip="Only while none of the stock it brought in has been sold"/>
           <Button Content="Cancel bill" Foreground="#B91C1C"
                   Command="{Binding CancelPurchaseCommand}" IsEnabled="{Binding HasSelection}"
                   ToolTip="Takes the stock back off the shelf and reverses the supplier's balance"/>

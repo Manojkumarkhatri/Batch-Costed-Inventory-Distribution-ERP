@@ -114,6 +114,73 @@
           </StackPanel>
         </Border>
 
+        <!-- ========================== UPDATES =========================== -->
+        <Border Style="{StaticResource Panel}">
+          <StackPanel>
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="Check for updates" Padding="16,7" Margin="0,0,8,0"
+                        Command="{Binding CheckForUpdatesCommand}"
+                        IsEnabled="{Binding UpdateBusy, Converter={StaticResource InverseBoolConverter}}"/>
+                <Button Content="Install and restart" Padding="16,7" FontWeight="SemiBold"
+                        Style="{StaticResource PrimaryButton}"
+                        Command="{Binding InstallUpdateCommand}"
+                        Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}"/>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Updates" Style="{StaticResource SectionHead}"/>
+                <TextBlock Style="{StaticResource Hint}">
+                  <Run Text="Version"/><Run Text="{Binding CurrentVersion, Mode=OneWay}"/>
+                </TextBlock>
+              </StackPanel>
+            </DockPanel>
+
+            <TextBlock Text="{Binding UpdateStatus}" Style="{StaticResource Hint}" Margin="0,10,0,0"/>
+
+            <Border Background="{StaticResource Wash}" BorderBrush="{StaticResource Line}"
+                    BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,12,0,0">
+              <TextBlock Style="{StaticResource Hint}" Margin="0"
+                         Text="A backup is taken automatically before any update is applied, and the update is stopped if it fails. Your data lives separately from the program, so nothing recorded is lost when the application is replaced."/>
+            </Border>
+          </StackPanel>
+        </Border>
+
+
+        <!-- ========================== PASSCODE ========================== -->
+        <Border Style="{StaticResource Panel}">
+          <StackPanel>
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="Remove" Style="{StaticResource DangerButton}" Margin="0,0,8,0"
+                        Command="{Binding RemovePasscodeCommand}"
+                        IsEnabled="{Binding PasscodeIsSet}"/>
+                <Button Content="Set passcode..." Padding="16,7" FontWeight="SemiBold"
+                        Command="{Binding SetPasscodeCommand}"/>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Passcode" Style="{StaticResource SectionHead}"/>
+                <TextBlock Style="{StaticResource Hint}" Text="{Binding PasscodeStatus}"/>
+              </StackPanel>
+            </DockPanel>
+
+            <TextBlock Text="Lock after idle (minutes)" Style="{StaticResource FieldLabel}"/>
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Save" Padding="14,6" Margin="6,0,0,0"
+                      Command="{Binding SaveAutoLockCommand}"/>
+              <TextBox Text="{Binding AutoLockMinutes, UpdateSourceTrigger=PropertyChanged}"/>
+            </DockPanel>
+            <TextBlock Style="{StaticResource Hint}"
+                       Text="0 turns idle locking off and asks only when the app opens. Whatever is on screen is kept while it is locked, so nothing half-entered is lost."/>
+
+            <Border Background="{StaticResource Wash}" BorderBrush="{StaticResource Line}"
+                    BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,14,0,0">
+              <TextBlock Style="{StaticResource Hint}" Margin="0"
+                         Text="This keeps the books off the screen when you step away. It is not encryption: the database file can still be opened by anyone with the computer. A Windows account password and disk encryption are what protect against that."/>
+            </Border>
+          </StackPanel>
+        </Border>
+
+
         <!-- ========================== RESTORE ========================== -->
         <Border Style="{StaticResource Panel}">
           <StackPanel>

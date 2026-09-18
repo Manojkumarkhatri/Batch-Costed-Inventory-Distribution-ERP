@@ -1,0 +1,78 @@
+<!--
+  The door. Three states, one window:
+    Setup    - first run, choose a passcode and a recovery question
+    Unlock   - the normal case
+    Recovery - he forgot it, answer the question and set a new one
+-->
+<Window x:Class="ShopApp.UI.Views.LockWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ShopApp" Height="520" Width="460"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Background="{StaticResource Surface}" ShowInTaskbar="True">
+
+  <DockPanel>
+
+    <Border DockPanel.Dock="Top" Background="{StaticResource RailBase}" Padding="24,22">
+      <StackPanel>
+        <TextBlock x:Name="HeaderText" FontSize="19" FontWeight="Bold" Foreground="White"/>
+        <TextBlock x:Name="SubText" Foreground="{StaticResource RailText}" FontSize="12"
+                   TextWrapping="Wrap" Margin="0,6,0,0"/>
+      </StackPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Style="{StaticResource DialogFooter}">
+      <DockPanel>
+        <Button x:Name="ForgotButton" DockPanel.Dock="Left" Content="Forgot passcode"
+                Style="{StaticResource LinkButton}" Click="Forgot_Click"
+                Visibility="Collapsed"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+          <Button x:Name="QuitButton" Content="Close" MinWidth="90" Margin="0,0,8,0"
+                  Click="Quit_Click"/>
+          <Button x:Name="GoButton" Content="Unlock" MinWidth="130"
+                  Style="{StaticResource PrimaryButton}" Click="Go_Click" IsDefault="True"/>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <StackPanel Margin="24,20,24,16">
+
+      <!-- Unlock -->
+      <StackPanel x:Name="UnlockPanel">
+        <TextBlock Text="Passcode" Style="{StaticResource Label}" Margin="0,0,0,4"/>
+        <PasswordBox x:Name="EntryBox" Padding="10,9" FontSize="17"/>
+      </StackPanel>
+
+      <!-- Recovery: answer the question, then choose a new passcode -->
+      <StackPanel x:Name="RecoveryPanel" Visibility="Collapsed">
+        <TextBlock x:Name="QuestionText" Style="{StaticResource Body}" TextWrapping="Wrap"
+                   FontWeight="SemiBold"/>
+        <TextBox x:Name="AnswerBox" Margin="0,8,0,0"/>
+        <TextBlock Style="{StaticResource Hint}"
+                   Text="Capitals and spaces do not matter."/>
+      </StackPanel>
+
+      <!-- Setup, and the second half of recovery -->
+      <StackPanel x:Name="SetupPanel" Visibility="Collapsed">
+        <TextBlock Text="New passcode" Style="{StaticResource Label}" Margin="0,0,0,4"/>
+        <PasswordBox x:Name="NewBox" Padding="10,9" FontSize="17"/>
+
+        <TextBlock Text="Type it again" Style="{StaticResource Label}"/>
+        <PasswordBox x:Name="ConfirmBox" Padding="10,9" FontSize="17"/>
+
+        <StackPanel x:Name="QuestionSetupPanel">
+          <TextBlock Text="Recovery question" Style="{StaticResource Label}"/>
+          <ComboBox x:Name="QuestionBox" IsEditable="True"/>
+
+          <TextBlock Text="Answer" Style="{StaticResource Label}"/>
+          <TextBox x:Name="NewAnswerBox"/>
+          <TextBlock Style="{StaticResource Hint}"
+                     Text="The only way back in if the passcode is forgotten. Choose something that will not change and that nobody else would guess."/>
+        </StackPanel>
+      </StackPanel>
+
+      <TextBlock x:Name="ErrorText" Foreground="{StaticResource Negative}" FontSize="12"
+                 TextWrapping="Wrap" Margin="0,14,0,0"/>
+    </StackPanel>
+  </DockPanel>
+</Window>

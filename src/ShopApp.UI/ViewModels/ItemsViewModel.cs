@@ -18,6 +18,12 @@ public record ItemListRow(Item Item, decimal OnHand, decimal StockValue)
     public bool IsActive => Item.IsActive;
 }
 
+/// <summary>
+/// What the item dialog hands back. Opening stock is separate from the item
+/// because it cannot be written until the item has an id.
+/// </summary>
+public record ItemEditResult(bool Saved, (decimal Qty, decimal Cost, DateTime? Expiry)? OpeningStock);
+
 /// <summary>What the adjustment dialog hands back when the user confirms.</summary>
 public record AdjustRequest(int BatchId, decimal SignedQty, AdjustmentReason Reason, string? Note);
 
@@ -26,6 +32,7 @@ public partial class ItemsViewModel : ObservableObject
     private readonly ItemService _items;
     private readonly ItemImportService _import;
     private readonly StockService _stock;
+    private readonly OpeningStockService _opening;
 
     [ObservableProperty] private string? searchTerm;
     [ObservableProperty] private ItemCategory? categoryFilter;
@@ -51,16 +58,18 @@ public partial class ItemsViewModel : ObservableObject
     /// returns true if the user pressed Save. The dialog edits the object
     /// directly, so a rejected save can be reopened with the typed values intact.
     /// </summary>
-    public Func<Item, bool>? ShowEditor { get; set; }
+    public Func<Item, ItemEditResult>? ShowEditor { get; set; }
 
     /// <summary>Set by the view. Returns null when the user cancels.</summary>
     public Func<Item, IReadOnlyList<ItemBatchRow>, AdjustRequest?>? ShowAdjust { get; set; }
 
-    public ItemsViewModel(ItemService items, ItemImportService import, StockService stock)
+    public ItemsViewModel(ItemService items, ItemImportService import, StockService stock,
+                          OpeningStockService opening)
     {
         _items = items;
         _import = import;
         _stock = stock;
+        _opening = opening;
         Load();
     }
 
@@ -154,7 +163,8 @@ public partial class ItemsViewModel : ObservableObject
 
         while (true)
         {
-            if (!ShowEditor(draft)) return;             // cancelled
+            var edit = ShowEditor(draft);
+            if (!edit.Saved) return;                   // cancelled
 
             var outcome = _items.Save(draft);
 
@@ -168,6 +178,24 @@ public partial class ItemsViewModel : ObservableObject
             if (!string.IsNullOrWhiteSpace(outcome.WarningText))
                 MessageBox.Show(outcome.WarningText, "Saved - please check",
                     MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // Opening stock goes in only once the item has an id. The service
+            // refuses a second opening entry for the same item, so a failed
+            // save followed by a retry cannot double it up.
+            if (edit.OpeningStock is { } opening)
+            {
+                var stocked = _opening.Save(DateTime.Today, new[]
+                {
+                    new OpeningStockLineInput(outcome.Id, null, opening.Qty, opening.Cost,
+                                              null, opening.Expiry, null)
+                });
+
+                if (!stocked.Success)
+                    MessageBox.Show(
+                        $"{draft.Name} was saved, but its opening stock was not:\n\n{stocked.ErrorText}\n\n" +
+                        "Add it from Stock, Opening Stock.",
+                        "Opening stock", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
 
             Load();
             SelectedRow = Items.FirstOrDefault(r => r.Item.Id == outcome.Id);

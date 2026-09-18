@@ -29,6 +29,10 @@ public partial class App : Application
         // fail. A crash during startup is exactly the one worth seeing, and
         // until this point there is nowhere to record it.
         AppLog.Start(Path.Combine(folder, "logs"));
+
+        // Where releases are published. Empty in a development build, which
+        // makes the Settings screen say so rather than fail silently.
+        UpdateService.UpdateFeedUrl = "";
         AppLog.Info($"---- started, version {GetType().Assembly.GetName().Version} ----");
         HookExceptionHandlers();
 
@@ -117,6 +121,8 @@ public partial class App : Application
         sc.AddTransient<OpeningStockService>();
         sc.AddTransient<ReportService>();
         sc.AddTransient<PaymentService>();
+        sc.AddTransient<PasscodeService>();
+        sc.AddTransient<UpdateService>();
         sc.AddTransient<ExpenseService>();
         sc.AddTransient<BankService>();
         sc.AddSingleton(new BackupService(DbPath));
@@ -158,6 +164,21 @@ public partial class App : Application
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             DbBootstrapper.Initialise(db);
+        }
+
+        // The door comes before the window. Gating here rather than after it
+        // means there is nothing behind the lock screen to click on, and no
+        // moment where the books are on screen unasked.
+        //
+        // There is no way past except the passcode or the recovery answer - a
+        // lock with a skip button is decoration - so closing it closes the app.
+        var passcodes = Services.GetRequiredService<PasscodeService>();
+
+        if (new LockWindow(passcodes).ShowDialog() != true)
+        {
+            AppLog.Info("Closed at the lock screen");
+            Shutdown();
+            return;
         }
 
         var window = Services.GetRequiredService<MainWindow>();

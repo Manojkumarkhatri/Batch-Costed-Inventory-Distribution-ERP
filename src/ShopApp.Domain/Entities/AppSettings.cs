@@ -50,4 +50,33 @@ public class AppSettings
     public string PaymentOutPrefix { get; set; } = "PV-";
     public int PaymentOutNextNumber { get; set; } = 1;
     public int PaymentNumberPadding { get; set; } = 3;
+
+    // ------------------------------------------------------ passcode
+    //
+    // Stored as a PBKDF2 hash with its own salt, never as the passcode. Anyone
+    // opening the database file finds nothing usable.
+    //
+    // Worth being clear about the limit: this keeps his margins off the screen
+    // when he walks away from the counter. The database itself is not
+    // encrypted, so it is not protection against someone who takes the
+    // machine. That is what Windows accounts and BitLocker are for.
+
+    public byte[]? PasscodeHash { get; set; }
+    public byte[]? PasscodeSalt { get; set; }
+
+    /// <summary>
+    /// A question only he can answer, so a forgotten passcode does not cost
+    /// him his books. The answer is hashed exactly like the passcode.
+    /// </summary>
+    public string? RecoveryQuestion { get; set; }
+    public byte[]? RecoveryAnswerHash { get; set; }
+    public byte[]? RecoveryAnswerSalt { get; set; }
+
+    /// <summary>
+    /// Minutes of no keyboard or mouse before it locks again. A lock only at
+    /// startup is no use when the app has been open since the morning.
+    /// Zero switches idle locking off.
+    /// </summary>
+    public int AutoLockMinutes { get; set; } = 15;
+
 }

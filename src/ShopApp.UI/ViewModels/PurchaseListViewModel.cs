@@ -39,6 +39,11 @@ public partial class PurchaseListViewModel : ObservableObject
     public Action? ShowPurchaseForm { get; set; }
 
     /// <summary>
+    /// Set by the view. Opens the entry form loaded with an existing bill.
+    /// </summary>
+    public Action<int>? ShowPurchaseFormForEdit { get; set; }
+
+    /// <summary>
     /// Set by the view. Asks whether the description goes on the printout,
     /// and returns null if he changed his mind.
     /// </summary>
@@ -209,33 +214,28 @@ public partial class PurchaseListViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Re-entering a bill correctly is cancel plus a fresh entry. Editing in
-    /// place would mean unwinding batches that may already have been sold from,
-    /// which cannot be done safely once stock has moved.
+    /// Opens the bill for correction, but only while none of the stock it
+    /// brought in has moved. After that its cost is frozen onto whatever was
+    /// sold from it, and the honest answer is cancel and re-enter.
     /// </summary>
     [RelayCommand]
     private void Correct()
     {
         if (SelectedPurchase is not { } bill) return;
 
-        var confirm = MessageBox.Show(
-            $"A saved bill cannot be edited in place, because its stock may already " +
-            $"have been sold and costed into invoices.\n\n" +
-            $"To correct bill {bill.Number}, cancel it and enter it again.\n\n" +
-            "Cancel it now and open a blank purchase form?",
-            "Correct a bill", MessageBoxButton.YesNo, MessageBoxImage.Question);
-        if (confirm != MessageBoxResult.Yes) return;
+        var (canEdit, reason) = _purchases.CanEdit(bill.Id);
 
-        var result = _purchases.Cancel(bill.Id, "Cancelled for re-entry");
-
-        if (!result.Success)
+        if (!canEdit)
         {
-            MessageBox.Show(result.ErrorText, "Cannot cancel",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(
+                $"{reason}\n\n" +
+                "Cancelling puts the stock back and lets you enter it again, but that is " +
+                "refused too once any of it has been sold.",
+                "Cannot edit this bill", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        ShowPurchaseForm?.Invoke();
+        ShowPurchaseFormForEdit?.Invoke(bill.Id);
         Load();
     }
 

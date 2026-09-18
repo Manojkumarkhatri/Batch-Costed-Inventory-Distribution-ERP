@@ -119,7 +119,7 @@
           <TextBlock Margin="0,6,0,0" HorizontalAlignment="Right" Foreground="#B91C1C"
                      Text="{Binding Balance, StringFormat=Balance due: {0:N2}}"/>
 
-          <Button Content="Save purchase" Margin="0,12,0,0" Padding="16,8"
+          <Button Content="{Binding SaveButtonText}" Margin="0,12,0,0" Padding="16,8"
                   FontWeight="Bold" FontSize="14"
                   Command="{Binding SaveCommand}"/>
 

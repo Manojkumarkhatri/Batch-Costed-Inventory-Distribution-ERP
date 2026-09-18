@@ -140,6 +140,38 @@
           </StackPanel>
         </Grid>
 
+        <!-- Only offered on a new item. Once it exists, opening stock is a
+             one-time migration entry and belongs on its own screen, where the
+             service refuses a second one. -->
+        <StackPanel x:Name="OpeningPanel">
+          <TextBlock Text="Opening stock" Style="{StaticResource SectionHead}"/>
+          <TextBlock Foreground="#94A3B8" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,0"
+                     Text="What is already on the shelf today, from before he started using this. Leave blank for something he has not stocked yet - a purchase will bring it in."/>
+
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/><ColumnDefinition Width="10"/>
+              <ColumnDefinition Width="*"/><ColumnDefinition Width="10"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+              <TextBlock Text="Quantity" Style="{StaticResource FieldLabel}"/>
+              <TextBox x:Name="OpeningQtyBox"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Text="Cost per unit" Style="{StaticResource FieldLabel}"/>
+              <TextBox x:Name="OpeningCostBox"/>
+            </StackPanel>
+            <StackPanel Grid.Column="4">
+              <TextBlock Text="Expiry" Style="{StaticResource FieldLabel}"/>
+              <DatePicker x:Name="OpeningExpiryBox"/>
+            </StackPanel>
+          </Grid>
+
+          <TextBlock x:Name="OpeningNote" Foreground="#B45309" FontSize="11"
+                     TextWrapping="Wrap" Margin="0,8,0,0"/>
+        </StackPanel>
+
         <CheckBox Content="Active" Margin="0,16,0,0" IsChecked="{Binding IsActive}"/>
 
       </StackPanel>

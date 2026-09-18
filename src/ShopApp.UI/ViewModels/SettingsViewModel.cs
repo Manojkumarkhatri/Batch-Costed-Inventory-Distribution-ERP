@@ -27,6 +27,10 @@ public partial class SettingsViewModel : ObservableObject
     private readonly AppDbContext _db;
     private readonly BackupService _backup;
     private readonly RestoreService _restore;
+    private readonly PasscodeService _passcodes;
+    private readonly UpdateService _updates;
+    private readonly PasscodeService _passcodes;
+    private readonly UpdateService _updates;
 
     private AppSettings _settings = null!;
 
@@ -56,6 +60,68 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private int backupKeepCount = 30;
     [ObservableProperty] private string lastBackupText = "never";
     [ObservableProperty] private bool passphraseIsSet;
+
+    // ------------------------------------------------------ passcode
+    [ObservableProperty] private bool passcodeIsSet;
+    [ObservableProperty] private int autoLockMinutes = 15;
+
+    // ------------------------------------------------------- updates
+    [ObservableProperty] private string updateStatus = "";
+    [ObservableProperty] private bool updateAvailable;
+    [ObservableProperty] private bool updateBusy;
+
+    public string CurrentVersion => _updates.CurrentVersion;
+    public bool CanUpdate => _updates.CanUpdate;
+
+    [RelayCommand]
+    private async Task CheckForUpdates()
+    {
+        UpdateBusy = true;
+        UpdateStatus = "Checking...";
+
+        var check = await _updates.CheckAsync();
+
+        UpdateAvailable = check.Available;
+        UpdateStatus = check.Error
+            ?? (check.Available
+                ? $"Version {check.Version} is available."
+                : "This is the latest version.");
+
+        UpdateBusy = false;
+    }
+
+    [RelayCommand]
+    private async Task InstallUpdate()
+    {
+        // Said plainly before anything downloads: it restarts, and a backup is
+        // taken first whether he asked for one or not.
+        var confirm = MessageBox.Show(
+            "Download the update and restart?\n\n" +
+            "A backup is taken first. Everything you have recorded is kept - the " +
+            "update replaces the program, not the data.",
+            "Update", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (confirm != MessageBoxResult.Yes) return;
+
+        UpdateBusy = true;
+        UpdateStatus = "Backing up, then downloading...";
+
+        var error = await _updates.DownloadAndApplyAsync(
+            new Progress<int>(p => UpdateStatus = $"Downloading... {p}%"));
+
+        UpdateBusy = false;
+
+        if (error is not null)
+        {
+            UpdateStatus = error;
+            MessageBox.Show(error, "Update", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    public string PasscodeStatus => PasscodeIsSet
+        ? "Set. Asked when the app opens, and after it has been left idle."
+        : "Not set. Anyone who opens the app can see everything in it.";
+    [ObservableProperty] private bool passcodeIsSet;
+    [ObservableProperty] private string passcodeSummary = "";
     [ObservableProperty] private string statusMessage = "";
     [ObservableProperty] private BackupFileRow? selectedBackup;
 
@@ -76,11 +142,16 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>Set by the view. Returns a .enc file path, or null if cancelled.</summary>
     public Func<string?, string?>? PickBackupFile { get; set; }
 
-    public SettingsViewModel(AppDbContext db, BackupService backup, RestoreService restore)
+    public SettingsViewModel(AppDbContext db, BackupService backup, RestoreService restore,
+                             PasscodeService passcodes, UpdateService updates)
     {
         _db = db;
         _backup = backup;
         _restore = restore;
+        _passcodes = passcodes;
+        _updates = updates;
+        _passcodes = passcodes;
+        _updates = updates;
         Load();
     }
 
@@ -112,9 +183,14 @@ public partial class SettingsViewModel : ObservableObject
         BackupKeepCount = _settings.BackupKeepCount;
         PassphraseIsSet = _settings.ProtectedBackupKey is { Length: > 0 };
 
+
         LastBackupText = _settings.LastBackupAt is DateTime last
             ? last.ToString("dd-MMM-yyyy HH:mm")
             : "never";
+
+        PasscodeIsSet = _passcodes.IsConfigured();
+        AutoLockMinutes = _passcodes.AutoLockMinutes();
+        OnPropertyChanged(nameof(PasscodeStatus));
 
         RefreshBackupList();
         OnPropertyChanged(nameof(BackupIsConfigured));
@@ -128,6 +204,10 @@ public partial class SettingsViewModel : ObservableObject
         foreach (var f in _backup.ListBackups(BackupFolder))
             Backups.Add(new BackupFileRow(f.FullName, f.Name, f.LastWriteTime, f.Length));
     }
+
+    /// <summary>Set by the view. Opens the passcode dialog.</summary>
+
+
 
     [RelayCommand]
     private void SaveBusiness()
@@ -237,6 +317,10 @@ public partial class SettingsViewModel : ObservableObject
         _db.SaveChanges();
 
         BackupFolder = chosen;
+        PasscodeIsSet = _passcodes.IsConfigured();
+        AutoLockMinutes = _passcodes.AutoLockMinutes();
+        OnPropertyChanged(nameof(PasscodeStatus));
+
         RefreshBackupList();
         OnPropertyChanged(nameof(BackupIsConfigured));
         OnChanged?.Invoke();
@@ -387,6 +471,62 @@ public partial class SettingsViewModel : ObservableObject
         {
             UseShellExecute = true
         });
+    }
+
+    /// <summary>
+    /// Opens the same lock window used at startup, so setting a passcode and
+    /// changing one go through one piece of code rather than two.
+    /// </summary>
+    public Func<bool>? ShowPasscodeSetup { get; set; }
+
+    [RelayCommand]
+    private void SetPasscode()
+    {
+        // Changing it requires the current one. Otherwise anyone who found the
+        // app unlocked could quietly lock him out of his own books.
+        if (PasscodeIsSet)
+        {
+            var current = AskPassphrase?.Invoke("Enter your current passcode", false);
+            if (string.IsNullOrEmpty(current)) return;
+
+            if (!_passcodes.Verify(current))
+            {
+                Warn("That passcode is not right.");
+                return;
+            }
+        }
+
+        if (ShowPasscodeSetup?.Invoke() != true) return;
+
+        Load();
+        StatusMessage = "Passcode saved.";
+    }
+
+    [RelayCommand]
+    private void RemovePasscode()
+    {
+        var current = AskPassphrase?.Invoke("Enter your passcode to remove it", false);
+        if (string.IsNullOrEmpty(current)) return;
+
+        if (!_passcodes.Remove(current))
+        {
+            Warn("That passcode is not right.");
+            return;
+        }
+
+        Load();
+        StatusMessage = "Passcode removed. The app will open without asking.";
+    }
+
+    [RelayCommand]
+    private void SaveAutoLock()
+    {
+        _passcodes.SetAutoLockMinutes(AutoLockMinutes);
+        AutoLockMinutes = _passcodes.AutoLockMinutes();
+
+        StatusMessage = AutoLockMinutes == 0
+            ? "Idle locking is off. It will only ask when the app opens."
+            : $"Locks after {AutoLockMinutes} minutes of no activity.";
     }
 
     private static string? Blank(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using ShopApp.Domain.Entities;
 using ShopApp.Domain.Enums;
@@ -13,6 +14,13 @@ namespace ShopApp.UI.Views;
 public partial class ItemDialog : Window
 {
     private readonly Item _item;
+
+    /// <summary>
+    /// What he typed in the opening stock boxes, or null if he left them
+    /// blank. The dialog does not write it - the caller does, after the item
+    /// has an id to attach it to.
+    /// </summary>
+    public (decimal Qty, decimal Cost, DateTime? Expiry)? OpeningStock { get; private set; }
 
     public IReadOnlyList<ItemCategory> Categories { get; } =
         Enum.GetValues<ItemCategory>().ToList();
@@ -31,6 +39,10 @@ public partial class ItemDialog : Window
         var isNew = item.Id == 0;
         Title = isNew ? "Add Item" : "Edit Item";
         HeaderText.Text = isNew ? "Add Item" : $"Edit {item.Name}";
+
+        // Opening stock is a migration figure, entered once when the item is
+        // first created. Editing an existing item never shows it.
+        if (!isNew) OpeningPanel.Visibility = Visibility.Collapsed;
 
         item.PropertyChanged += OnItemChanged;
         Closed += (_, _) => item.PropertyChanged -= OnItemChanged;
@@ -62,7 +74,43 @@ public partial class ItemDialog : Window
             : $"1 {_item.AltUnit} = {_item.ConversionFactor:0.###} {_item.BaseUnit}";
     }
 
-    private void Save_Click(object sender, RoutedEventArgs e) => DialogResult = true;
+    private void Save_Click(object sender, RoutedEventArgs e)
+    {
+        OpeningStock = null;
+        OpeningNote.Text = "";
+
+        var qtyText = OpeningQtyBox.Text?.Trim() ?? "";
+        var costText = OpeningCostBox.Text?.Trim() ?? "";
+
+        var wantsOpening = !string.IsNullOrEmpty(qtyText) || !string.IsNullOrEmpty(costText);
+
+        if (wantsOpening)
+        {
+            if (!decimal.TryParse(qtyText, NumberStyles.Number,
+                                  CultureInfo.CurrentCulture, out var qty) || qty <= 0)
+            {
+                OpeningNote.Text = "Enter the opening quantity as a number greater than zero, "
+                                 + "or clear both boxes.";
+                OpeningQtyBox.Focus();
+                return;
+            }
+
+            // Without a cost the stock has no value and every margin taken
+            // from it would be wrong, so it is required rather than assumed.
+            if (!decimal.TryParse(costText, NumberStyles.Number,
+                                  CultureInfo.CurrentCulture, out var cost) || cost <= 0)
+            {
+                OpeningNote.Text = "Enter what this stock cost per unit. Without it the stock "
+                                 + "has no value and profit on it cannot be worked out.";
+                OpeningCostBox.Focus();
+                return;
+            }
+
+            OpeningStock = (qty, cost, OpeningExpiryBox.SelectedDate);
+        }
+
+        DialogResult = true;
+    }
 
     private void Cancel_Click(object sender, RoutedEventArgs e) => DialogResult = false;
 }

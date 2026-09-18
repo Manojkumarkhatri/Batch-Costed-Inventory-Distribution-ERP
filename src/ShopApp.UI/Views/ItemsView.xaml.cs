@@ -24,10 +24,11 @@ public partial class ItemsView : UserControl
         };
     }
 
-    private bool ShowEditor(Item item)
+    private ItemEditResult ShowEditor(Item item)
     {
         var dialog = new ItemDialog(item) { Owner = Window.GetWindow(this) };
-        return dialog.ShowDialog() == true;
+        var saved = dialog.ShowDialog() == true;
+        return new ItemEditResult(saved, saved ? dialog.OpeningStock : null);
     }
 
     private AdjustRequest? ShowAdjust(Item item, IReadOnlyList<ItemBatchRow> batches)

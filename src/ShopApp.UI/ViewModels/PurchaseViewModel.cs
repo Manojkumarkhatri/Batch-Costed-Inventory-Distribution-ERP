@@ -188,7 +188,11 @@ public partial class PurchaseViewModel : ObservableObject
                 l.PackQty, l.Qty, l.Rate, l.StorageLocation)).ToList(),
             PaidNow, PaymentMode);
 
-        var result = _purchases.Create(input);
+        // Editing an existing bill rewrites it in place, keeping its id and
+        // its position in the list. Creating is the same call with no id.
+        var result = EditingPurchaseId is int existing
+            ? _purchases.Replace(existing, input)
+            : _purchases.Create(input);
 
         if (!result.Success)
         {
@@ -201,7 +205,9 @@ public partial class PurchaseViewModel : ObservableObject
             MessageBox.Show(result.WarningText, "Saved - please check",
                 MessageBoxButton.OK, MessageBoxImage.Information);
 
-        StatusMessage = $"Purchase saved. Stock updated.";
+        StatusMessage = EditingPurchaseId is null
+            ? "Purchase saved. Stock updated."
+            : "Bill updated. Stock and cost recalculated.";
         NewPurchase();
         LoadLookups();
 
@@ -215,9 +221,63 @@ public partial class PurchaseViewModel : ObservableObject
     /// </summary>
     public Action? OnSaved { get; set; }
 
+    /// <summary>
+    /// Set when the form was opened to change an existing bill. Null means a
+    /// new one. Drives the button text as well as which service call is made.
+    /// </summary>
+    [ObservableProperty] private int? editingPurchaseId;
+
+    public string SaveButtonText => EditingPurchaseId is null ? "Save purchase" : "Update bill";
+
+    partial void OnEditingPurchaseIdChanged(int? value) =>
+        OnPropertyChanged(nameof(SaveButtonText));
+
+    /// <summary>
+    /// Fills the form from a saved bill so it can be corrected. The caller has
+    /// already checked with CanEdit that nothing downstream depends on it.
+    /// </summary>
+    public void LoadForEdit(Purchase purchase)
+    {
+        LoadLookups();
+
+        EditingPurchaseId = purchase.Id;
+        Supplier = Suppliers.FirstOrDefault(p => p.Id == purchase.SupplierId);
+        SupplierBillNo = purchase.SupplierBillNo ?? "";
+        Date = purchase.Date;
+        Discount = purchase.Discount;
+        OtherCharges = purchase.OtherCharges;
+        Notes = purchase.Notes;
+
+        Lines.Clear();
+        foreach (var line in purchase.Lines)
+        {
+            var vm = new PurchaseLineViewModel
+            {
+                Item = AvailableItems.FirstOrDefault(i => i.Id == line.ItemId),
+                BatchNo = line.Batch?.BatchNo,
+                MfgDate = line.Batch?.MfgDate,
+                ExpiryDate = line.Batch?.ExpiryDate,
+                PackQty = line.PackQty,
+                Qty = line.Qty,
+                Rate = line.Rate
+            };
+            Lines.Add(vm);
+        }
+
+        if (Lines.Count == 0) AddLine();
+
+        // Paid now is not reloaded: the payment is rewritten from whatever is
+        // entered, and showing the old figure invites paying twice.
+        PaidNow = 0;
+
+        RefreshTotals();
+    }
+
     [RelayCommand]
     private void NewPurchase()
     {
+        EditingPurchaseId = null;
+
         Supplier = null;
         SupplierBillNo = null;
         Date = DateTime.Today;

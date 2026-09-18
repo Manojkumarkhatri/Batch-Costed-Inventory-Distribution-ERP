@@ -1,6 +1,8 @@
 using System.IO;
 using Microsoft.Win32;
 using System.Windows;
+using ShopApp.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows.Controls;
 using ShopApp.UI.ViewModels;
 
@@ -16,11 +18,27 @@ public partial class SettingsView : UserControl
         vm.AskPassphrase = AskPassphrase;
         vm.PickFolder = PickFolder;
         vm.PickBackupFile = PickBackupFile;
+        vm.ShowPasscodeSetup = ShowPasscodeSetup;
 
         IsVisibleChanged += (_, e) =>
         {
             if (e.NewValue is true) vm.Load();
         };
+    }
+
+    /// <summary>
+    /// The same window the app opens with. Setting a passcode for the first
+    /// time and changing an existing one are the same job, so they run through
+    /// one implementation rather than a second copy that can drift.
+    /// </summary>
+    private bool ShowPasscodeSetup()
+    {
+        var passcodes = App.Services.GetRequiredService<PasscodeService>();
+        var window = new LockWindow(passcodes, forceSetup: true)
+        {
+            Owner = Window.GetWindow(this)
+        };
+        return window.ShowDialog() == true;
     }
 
     private string? AskPassphrase(string heading, bool confirm)

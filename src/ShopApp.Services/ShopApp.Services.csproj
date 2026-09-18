@@ -9,6 +9,12 @@
     <!-- DPAPI on .NET 8 needs this explicitly -->
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
+    <!--
+      UpdateService lives here because it has to take a backup before an
+      update applies, and BackupService is in this project. The UI project
+      also references Velopack for the startup hook in Program.cs.
+    -->
+    <PackageReference Include="Velopack" Version="1.2.0" />
   </ItemGroup>
     <ItemGroup>
     <ProjectReference Include="../ShopApp.Domain/ShopApp.Domain.csproj" />
